@@ -342,6 +342,34 @@ tr4 = Branching "PP" [tr3, Leaf "telescopes"]
 tr5::Tree
 tr5= Branching "0" [Branching "1" [Leaf "3"], Branching "2" [Leaf "4"]]
 
- 
+test_tree::Tree
+test_tree = Branching "a" [Leaf "b", Branching "c" [Leaf "d", Leaf "e"]]
+
+test_pfsta1::ProbFSTA
+test_pfsta1 = (  [(1, 1.0)], 
+                [((1, "a", [2]), 0.2), 
+                 ((1, "a", [2,2]), 0.3),
+                 ((2, "c", [3,3]), 0.2),
+                 ((2, "b", []), 0.1), 
+                 ((3, "d", []), 0.1),
+                 ((3, "e", []), 0.1)], 
+                [1, 2, 3])
+
+test_pfsta2::ProbFSTA
+test_pfsta2 = (  [(1, 1.0)], 
+                [((1, "a", [2]), 0.2), 
+                 ((1, "a", [1,2]), 0.3),
+                 ((2, "c", [2,3]), 0.2),
+                 ((2, "b", []), 0.1), 
+                 ((3, "d", []), 0.1),
+                 ((3, "e", []), 0.1)], 
+                [1, 2, 3])
+
 --- probOver pfsta3 (getCxt tr4 [1]) 2
 --- 1.0000000000000002e-3
+
+-- probUnder test_pfsta1 test_tree 1
+-- 6.0000000000000015e-5
+
+-- probOver test_pfsta1 (getCxt test_tree [0]) 2
+-- 6.000000000000002e-4

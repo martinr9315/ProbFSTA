@@ -1,14 +1,9 @@
 # PFSTA Python Implementation
 import itertools
 
-
-# Updates:
-# read from text files 
-# leave lexical item when making inner nodes *
-
 # TODO:
-# break trees into over and two under
-
+# finish prob_over
+# memoize
 
 
 class PFSTA:
@@ -24,10 +19,12 @@ class PFSTA:
         return self.q
 
     def start_prob(self, state):
-        self.i.get(state, 0.0)
+        return self.i.get(state, 0.0)
 
     def transition_prob(self, transition):
-        self.delta.get(transition, 0.0)
+        # if self.delta.get(transition):
+        #     print(self.delta.get(transition))
+        return self.delta.get(transition, 0.0)
     # -------------------------------------
 
 
@@ -161,19 +158,20 @@ def print_tree(node):  # getAdsList
             print_tree(n)
 
 # -------------- Over/Under Utilities ---------------------------
-# sameParameter (list contains same items), removeReduplicates - not necessary in Python 
-# possList - itertools.permutations(iterable, r)
-# possListNoOrder - itertools.combinations_with_replacement(iterable, r) 
+
+
+def possible_lists(pfsta, n):
+    return set(list(itertools.permutations(pfsta.q, n)) +
+               list(itertools.combinations_with_replacement(pfsta.q, n)))
 
 
 def zip_three(s1, s2, s3):
-    # what is point
-    s1 = itertools.permutations(s1, len(s1))
-    s2 = itertools.permutations(s2, len(s2))
-    s3 = itertools.permutations(s3, len(s3))
-    s12 = zip(s1, s2)
-    s123 = zip(s12, s3)
-    return s123
+    zipped = []
+    for i1 in s1:
+        for i2 in s2:
+            for i3 in s3:
+                zipped.append((i1, i2, i3))
+    return zipped
 
 
 def filter_through(stset, para):
@@ -265,43 +263,20 @@ def star_nodes(node):
 
 # ---------------------recursive under------------------------
 
-# probUnder :: ProbFSTA -> Tree -> State -> Double
-# --base case: when the tree only contains leaf nodes, just find the transition probability for (st, ndl, [])
-# probUnder pfsa (Leaf ndl) st = trProb pfsa (st, []) ndl 
-# --recursive step: we are interested P(the root of a branching tree is at state st)
-# --ndl::NodeLabel
-# --subtrees:: [Tree]
-# probUnder pfsa (Branching ndl subtrees) st = let k = length subtrees in -- get # of branches
-#          sum(map (\stateSeq -> trProb pfsa (st, stateSeq) ndl* --get the transition probability for (st, ndl, stateSeq)
-#          					   (product(map (\(sbt, state) -> (probUnder pfsa sbt state)) (zip subtrees stateSeq))))
-#          					   --first zipping the subtrees and stateSeq; then sbt: each single subtree; state: each daughter state
-#          					   --big products over all UnderValues P(sbt is in state)
-#          					   --so maybe at here, you could see that it would be nice to have the undervalue of each chunk memoized :-]! 
-#          	(possList k (allStates pfsa)))
-# --stateSeq: [States]; each slot corresp
-
 def prob_under(pfsta, node, state):
-# base case: when the tree only contains leaf nodes, just find the transition probability for (st, label, [])
     if not node.children:
-        return pfsta.transition_prob((state, node.label, []))
+        return pfsta.transition_prob((state, node.label, ()))
     else:
-        k = len(node.children)  # get # of branches
-        state_seq = itertools.permutations(pfsta.q, k)  # (possList k (allStates pfsa)))
+        k = len(node.children)
+        state_seq = possible_lists(pfsta, k)
         sum = 0
         for st in state_seq:
             zipped = list(zip(node.children, st))
-            print(pfsta.transition_prob((state, node.label, st)))
-            sum += pfsta.transition_prob((state, node.label, st))
-            
-            product = 1
+            product = pfsta.transition_prob((state, node.label, st))
             for z in zipped:
                 product *= prob_under(pfsta, z[0], z[1])
             sum += product
         return sum
-            
-        ##### struggling with this recursion 
-
-
 
 # probOver:: ProbFSTA -> TreeCxt -> State -> Double
 # --base case: we are at the root of the tree, just find the initial parameter I(st)
@@ -323,12 +298,28 @@ def prob_under(pfsta, node, state):
 # --rstateSeq: [States]; each slot corresponds to the state of each right sister
 # --momState: the possible state that the mother node is in
 # --Big sum scoping over the combinations of all three possible lists (thus, zipping them together)
+
+
 def prob_over(pfsta, context, state):
     if context.is_root():
         return pfsta.start_prob(state)
     else:
+        mother_label = context.mother.label
         kl = len(context.left_sisters)
         kr = len(context.right_sisters)
+        poss_list_left = possible_lists(pfsta, kl)
+        poss_list_right = possible_lists(pfsta, kr)
+        zipped = zip_three(poss_list_left, poss_list_right, pfsta.q)
+        sum = 0
+        for l_state_seq, r_state_seq, mom_state in zipped:
+            product = pfsta.transition_prob((mom_state, mother_label, (l_state_seq+(state,)+r_state_seq)))
+            if product:
+                product *= prob_over(pfsta, context, mom_state)
+            # TO DO: big products over all under values
+        sum += product
+        return sum
+
+
 
 # -----------------------------------------------
 
@@ -336,39 +327,28 @@ def prob_over(pfsta, context, state):
 root1 = Node('a')
 root1.set_address('')
 root1.children = [Node('b'), Node('c')]
-root1.children[1].children = [Node('d'), Node('e'), Node('f')]
-
-
-# assign_addresses(root)
-
-# print_tree(root)
-
-
-# get_context(root, '1').print()
-# get_context(root, '11').print()
-
-# zip_three([[1, 2], [3, 4]], [[5, 6], [7, 8]], [9, 10])
-
+root1.children[1].children = [Node('d'), Node('e')]
+assign_addresses(root1)
+# print_tree(root1)
 # trees = read_trees("test_trees.parsed")
-# print_tree(trees[11])
-# for t in trees[:]:
-#     print_tree(t)
-#     get_context(t, '0').print()
-#     print('\n')
 
+pfsta1 = PFSTA([1, 2, 3],
+               {1: 1.0},
+               {(1, 'a', (2)): 0.2,
+                (1, 'a', (2, 2)): 0.3,
+                (2, 'c', (3, 3)): 0.2,
+                (2, 'b', ()): 0.1,
+                (3, 'd', ()): 0.1,
+                (3, 'e', ()): 0.1})
 
-# type ProbFSTA = ([(State,Double)],                  -- start distribution
-#                 [((State, NodeLabel, [State]), Double)], --transition probabilities: making sure it's locally normalized (the probabilities ending )
-#                 [State])                       -- all states
+pfsta2 = PFSTA([1, 2, 3],
+               {1: 1.0},
+               {(1, 'a', (2)): 0.2,
+                (1, 'a', (1, 2)): 0.3,
+                (2, 'c', (2, 3)): 0.2,
+                (2, 'b', ()): 0.1,
+                (3, 'd', ()): 0.1,
+                (3, 'e', ()): 0.1})
 
-# # --with more than one states, one branches
-# # pfsta2::ProbFSTA
-# # pfsta2 = ([(1, 1.0)], [((1, "V", [1]), 0.18), ((1,"C",[2]), 0.5), ((1,"V",[3]), 0.12), ((2,"V",[3]), 0.4),
-# #  ((2,"V",[1]), 0.6),  ((3,"C",[1]), 1.0), ((1, "\n", []), 0.2)], [1, 2,3])
-
-# pfsta2 = PFSTA([1,2,3], {1:1.0}, [((1, "V", [1]), 0.18), ((1,"C",[2]), 0.5), ((1,"V",[3]), 0.12), ((2,"V",[3]), 0.4),
-# #  ((2,"V",[1]), 0.6),  ((3,"C",[1]), 1.0), ((1, "\n", []), 0.2)])
-
-pfsta1 = PFSTA([1, 2, 3], {1: 1.0}, {(1, 'a', (2)): 0.5, (2, 'b', (3)): 0.5})
-
-prob_under(pfsta1, root1, 1)
+print(prob_under(pfsta1, root1, 1))
+# print(prob_over(pfsta1, get_context(root1, "0"), 2))
