@@ -2,6 +2,7 @@
 import itertools
 
 # TODO:
+# no order?
 
 
 class PFSTA:
