@@ -2,8 +2,6 @@
 import itertools
 
 # TODO:
-# finish prob_over
-# memoize -- states to under values
 
 
 class PFSTA:
@@ -22,8 +20,6 @@ class PFSTA:
         return self.i.get(state, 0.0)
 
     def transition_prob(self, transition):
-        # if self.delta.get(transition):
-        #     print(self.delta.get(transition))
         return self.delta.get(transition, 0.0)
     # -------------------------------------
 
@@ -291,28 +287,6 @@ def prob_under(pfsta, node, state):
             return sum
 
 
-# probOver:: ProbFSTA -> TreeCxt -> State -> Double
-# --base case: we are at the root of the tree, just find the initial parameter I(st)
-# probOver pfsa Root st = startProb pfsa st
-# --recursive step: we are interested P(this tree context is at state st)
-# --str:: NodeLabel; mother node label
-# --cxt:: TreeCxt; mother node conext
-# --lsubt:: [Tree]; left sisters
-# --rsubt:: [Tree]; right sisters 
-# probOver pfsa (Nonroot str cxt lsubt rsubt) st = let stateList = allStates pfsa in
-# 	let kl = length lsubt in --get # of left sisters
-#             let kr = length rsubt in -- get # of right sisters
-#             sum(map (\(lstateSeq, rstateSeq, momState) -> (probOver pfsa cxt momState)* --OverValue P(mother node context is in state momState)
-#             	                                           product(map (\(sbt, state) -> (probUnder pfsa sbt state)) (zip lsubt lstateSeq)) *  --big products over all UnderValues P(sbt is in state)
-#             	                                           product(map (\(rsbt, rstate) -> (probUnder pfsa rsbt rstate)) (zip rsubt rstateSeq)) * --big products over all UnderValues P(rsbt is in rstate)
-#             	                                           trProb pfsa (momState, concat [lstateSeq, [st], rstateSeq]) str) --get the transition probability: (momState, str, [lStateSeq]+[st]+[rStateSeq])
-#                 (zipthree (possList kl stateList) (possList kr stateList) (stateList)))
-# --lstateSeq: [States]; each slot corresponds to the state of each left sister
-# --rstateSeq: [States]; each slot corresponds to the state of each right sister
-# --momState: the possible state that the mother node is in
-# --Big sum scoping over the combinations of all three possible lists (thus, zipping them together)
-
-
 def prob_over(pfsta, context, state):
     if context.get_over(state):
         return context.get_over(state)
@@ -343,7 +317,7 @@ def prob_over(pfsta, context, state):
             sum += final_product
             context.over[state] = sum
             return sum
-            
+
 # -----------------------------------------------
 
 
