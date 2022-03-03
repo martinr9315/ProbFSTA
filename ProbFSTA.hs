@@ -373,3 +373,9 @@ test_pfsta2 = (  [(1, 1.0)],
 
 -- probOver test_pfsta1 (getCxt test_tree [0]) 2
 -- 6.000000000000002e-4
+
+-- treeprobViaUnder test_pfsta1 test_tree
+-- 6.0000000000000015e-5
+
+-- treeprobViaOver test_pfsta1 test_tree
+-- 1.0

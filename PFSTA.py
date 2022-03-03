@@ -265,7 +265,7 @@ def star_nodes(node):
             star_nodes(n)
 
 
-# ---------------------recursive under------------------------
+# ---------------------Recursive Under & Over------------------------
 
 def prob_under(pfsta, node, state):
     if node.get_under(state):
@@ -318,8 +318,27 @@ def prob_over(pfsta, context, state):
             context.over[state] = sum
             return sum
 
-# -----------------------------------------------
+# ---------------Tree probabilities------------
+# treeprobViaUnder :: ProbFSTA -> Tree -> Double
+# treeprobViaUnder m tree = sum [startProb m q * underValue m tree q | q <- allStates m]
 
+
+def tree_prob_via_under(pfsta, node):
+    sum = 0
+    for state in pfsta.q:
+        sum += pfsta.start_prob(state)*prob_under(pfsta, node, state)
+    return sum
+
+
+# treeprobViaOver :: ProbFSTA -> Tree -> Double
+# treeprobViaOver m tree = sum [startProb m q * overValue m (getCxt tree []) q | q <- allStates m]
+
+def tree_prob_via_over(pfsta, node):
+    sum = 0
+    for state in pfsta.q:
+        sum += pfsta.start_prob(state)*prob_over(pfsta, get_context(node, ""), state)
+    return sum
+# -------------------Testing------------
 
 root1 = Node('a')
 root1.set_address('')
@@ -347,5 +366,8 @@ pfsta2 = PFSTA([1, 2, 3],
                 (3, 'd', ()): 0.1,
                 (3, 'e', ()): 0.1})
 
-print(prob_under(pfsta1, root1, 1))
-print(prob_over(pfsta1, get_context(root1, "0"), 2))
+# print(prob_under(pfsta1, root1, 1))
+# print(prob_over(pfsta1, get_context(root1, "0"), 2))
+
+print(tree_prob_via_under(pfsta1, root1))
+print(tree_prob_via_over(pfsta1, root1))
