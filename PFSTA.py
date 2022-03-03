@@ -34,13 +34,16 @@ class Node:
         self.address = None
         self.label = label
         self.over = None
-        self.under = None
+        self.under = {}
 
     def set_address(self, address):
         self.address = address
 
     def star_label(self):
         self.label = '*'
+
+    def get_under(self, state):
+        return self.under.get(state)
 
     def print(self):
         print("Node "+self.label, end=' ')
@@ -56,7 +59,7 @@ class TreeContext:
         self.left_sisters = []
         self.right_sisters = []
         self.root = False
-        self.over = None
+        self.over = {}
 
     def set_context(self, mother, mother_context, left_sisters, right_sisters):
         self.mother = mother
@@ -66,9 +69,12 @@ class TreeContext:
 
     def set_root(self):
         self.root = True
-    
+
     def is_root(self):
         return self.root
+
+    def get_over(self, state):
+        return self.over.get(state)
 
     def print(self):
         print("[", end=' ')
@@ -88,6 +94,7 @@ class TreeContext:
                 else:
                     print(None, end=' ')
         print("]", end=' ')
+    
 
 #  ----------- Tree utilities -------------
 # nthsubt - not necessary in Python
@@ -265,8 +272,8 @@ def star_nodes(node):
 # ---------------------recursive under------------------------
 
 def prob_under(pfsta, node, state):
-    if node.under:
-        return node.under
+    if node.get_under(state):
+        return node.get_under(state)
     else:
         if not node.children:
             return pfsta.transition_prob((state, node.label, ()))
@@ -280,7 +287,7 @@ def prob_under(pfsta, node, state):
                 for z in zipped:
                     product *= prob_under(pfsta, z[0], z[1])
                 sum += product
-            node.under = sum
+            node.under[state] = sum
             return sum
 
 
@@ -307,8 +314,8 @@ def prob_under(pfsta, node, state):
 
 
 def prob_over(pfsta, context, state):
-    if context.over:
-        return context.over
+    if context.get_over(state):
+        return context.get_over(state)
     else:
         if context.is_root():
             return pfsta.start_prob(state)
@@ -334,7 +341,7 @@ def prob_over(pfsta, context, state):
                     product *= left_under * right_under
                     final_product = product
             sum += final_product
-            context.over = sum
+            context.over[state] = sum
             return sum
             
 # -----------------------------------------------
@@ -366,5 +373,5 @@ pfsta2 = PFSTA([1, 2, 3],
                 (3, 'd', ()): 0.1,
                 (3, 'e', ()): 0.1})
 
-# print(prob_under(pfsta1, root1, 1))
+print(prob_under(pfsta1, root1, 1))
 print(prob_over(pfsta1, get_context(root1, "0"), 2))
