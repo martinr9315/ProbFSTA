@@ -3,7 +3,7 @@ import itertools
 
 # TODO:
 # finish prob_over
-# memoize
+# memoize -- states to under values
 
 
 class PFSTA:
@@ -56,6 +56,7 @@ class TreeContext:
         self.left_sisters = []
         self.right_sisters = []
         self.root = False
+        self.over = None
 
     def set_context(self, mother, mother_context, left_sisters, right_sisters):
         self.mother = mother
@@ -264,19 +265,24 @@ def star_nodes(node):
 # ---------------------recursive under------------------------
 
 def prob_under(pfsta, node, state):
-    if not node.children:
-        return pfsta.transition_prob((state, node.label, ()))
+    if node.under:
+        return node.under
     else:
-        k = len(node.children)
-        state_seq = possible_lists(pfsta, k)
-        sum = 0
-        for st in state_seq:
-            zipped = list(zip(node.children, st))
-            product = pfsta.transition_prob((state, node.label, st))
-            for z in zipped:
-                product *= prob_under(pfsta, z[0], z[1])
-            sum += product
-        return sum
+        if not node.children:
+            return pfsta.transition_prob((state, node.label, ()))
+        else:
+            k = len(node.children)
+            state_seq = possible_lists(pfsta, k)
+            sum = 0
+            for st in state_seq:
+                zipped = list(zip(node.children, st))
+                product = pfsta.transition_prob((state, node.label, st))
+                for z in zipped:
+                    product *= prob_under(pfsta, z[0], z[1])
+                sum += product
+            node.under = sum
+            return sum
+
 
 # probOver:: ProbFSTA -> TreeCxt -> State -> Double
 # --base case: we are at the root of the tree, just find the initial parameter I(st)
@@ -301,26 +307,36 @@ def prob_under(pfsta, node, state):
 
 
 def prob_over(pfsta, context, state):
-    if context.is_root():
-        return pfsta.start_prob(state)
+    if context.over:
+        return context.over
     else:
-        mother_label = context.mother.label
-        kl = len(context.left_sisters)
-        kr = len(context.right_sisters)
-        poss_list_left = possible_lists(pfsta, kl)
-        poss_list_right = possible_lists(pfsta, kr)
-        zipped = zip_three(poss_list_left, poss_list_right, pfsta.q)
-        sum = 0
-        for l_state_seq, r_state_seq, mom_state in zipped:
-            product = pfsta.transition_prob((mom_state, mother_label, (l_state_seq+(state,)+r_state_seq)))
-            if product:
-                product *= prob_over(pfsta, context, mom_state)
-            # TO DO: big products over all under values
-        sum += product
-        return sum
-
-
-
+        if context.is_root():
+            return pfsta.start_prob(state)
+        else:
+            mother_label = context.mother.label
+            kl = len(context.left_sisters)
+            kr = len(context.right_sisters)
+            poss_list_left = possible_lists(pfsta, kl)
+            poss_list_right = possible_lists(pfsta, kr)
+            zipped = zip_three(poss_list_left, poss_list_right, pfsta.q)
+            sum = 0
+            final_product = 0
+            for l_state_seq, r_state_seq, mom_state in zipped:
+                product = pfsta.transition_prob((mom_state, mother_label, (l_state_seq+(state,)+r_state_seq)))
+                if product:
+                    product *= prob_over(pfsta, context.mother_context, mom_state)
+                    left_under = 1
+                    for i, l_sis in enumerate(context.left_sisters):
+                        left_under *= prob_under(pfsta, l_sis, l_state_seq[i])
+                    right_under = 1
+                    for i, r_sis in enumerate(context.right_sisters):
+                        right_under *= prob_under(pfsta, r_sis, r_state_seq[i])
+                    product *= left_under * right_under
+                    final_product = product
+            sum += final_product
+            context.over = sum
+            return sum
+            
 # -----------------------------------------------
 
 
@@ -350,5 +366,5 @@ pfsta2 = PFSTA([1, 2, 3],
                 (3, 'd', ()): 0.1,
                 (3, 'e', ()): 0.1})
 
-print(prob_under(pfsta1, root1, 1))
-# print(prob_over(pfsta1, get_context(root1, "0"), 2))
+# print(prob_under(pfsta1, root1, 1))
+print(prob_over(pfsta1, get_context(root1, "0"), 2))
