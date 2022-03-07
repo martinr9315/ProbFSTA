@@ -25,6 +25,7 @@ sumCounts xs =
 --foldl takes the zeroCounts and the first elment of xs and applies addCounts to them.
         --Then, it applies addCounts to the result and the next item in the list. 
 
+
 ------------------------------utility funcs
 normalize :: M.Map a Double -> M.Map a Double
 normalize m =
@@ -61,20 +62,40 @@ observedEvents :: Tree -> [ObservedEvent]
 observedEvents tree = [Start tree] ++ [Mid (getCxt tree i) (getLabel tree i) (getSubtree tree i)  | i <- getAdsList tree]
 
 ----------------------------------E-step
+--expectationsFromObs takes an observed events and the current estimate of a PFSTA
+  -- and split up this event according to how much responsibilities each parameter in the PFSTA should undertake. 
+
+--This function correspond to the equation scoped in the big sum in 'Algorithm_skeleton' in the expected count section. 
+
+--Notice that the expected count section is just talking about one single tree; we need further sum up over all trees.
+  --However, in this method here, we first split the whole corpora to the observed events and operate on observed events but not the tree!
+  --Also notice that each observed event actually encodes the whole tree information
 expectationsFromObs :: ProbFSTA -> ObservedEvent -> SoftCounts
 expectationsFromObs m e =
     let (initprob, trprob, states) = m in
     case e of
-    Start tree ->
-        let likelihoods = M.fromList [(HStart q,  (startProb m q * underValue m tree q)) | q <- states] in
-        normalize likelihoods 
-    Mid before str after ->
-        let k = length after in 
+    Start tree -> -- If this observed event is a starting event, which corresponds to the first equation with Q0 = q (I should've labeled them :( 
+        let likelihoods = M.fromList [(HStart q,  (startProb m q * underValue m tree q)) | q <- states] in -- this step creates a list, each element corresponds to a pair, (state q, P(root = state q))
+        																								   --P(root in q) = I(q) * under(Tree) (q)
+        normalize likelihoods  -- normalize takes this list and divide each element by the sum of the list. 
+        					   -- look at the treeProb functions if you puzzle why it works! (the whole sum is just the tree probability)
+    Mid before str after -> --If this observed event is a transition event
+    						--before::TreeCxt;   the context of this current node
+    						--str::   NodeLabel; the current node label
+    						--after:: [Tree];    list of subtrees
+        let k = length after in  --actually, you don't need to split it into cases, since when k ==0, you can just let (possList 0 states) output [[]], I was sloppy and didn't fix the definition for possList
         if k == 0 
         	then let likelihoods = M.fromList [(HStep q1 str q2, overValue m before q1 * trProb m (q1,q2) str * product(map (\(sbt, st) -> underValue m sbt st) (zip after q2)))  | q1 <- states, q2 <- [[]]] in 
         	normalize likelihoods 
+        	--This following step also makes a list, which creates all possible transitions and its corresponding probability that it's used in this event. 
+        							--Each element in this list is a pair, (transition r, P(r should be responsible to this event)) 
+        	--  Notice r = (state q1, nodeLabel str, stateSeq q2)
+        	--  P(r should be wholy responsible for this event) = P(q1 can have a context before): overValue 
+        													--   *P(q1, str, q2): trProb
+        													--   *P(q2 can be responsible for the subtrees): product of all underValues
         	else let likelihoods = M.fromList [(HStep q1 str q2, overValue m before q1 * trProb m (q1,q2) str * product(map (\(sbt, st) -> underValue m sbt st) (zip after q2))) | q1 <- states, q2 <- possList k states] in 
-        	normalize likelihoods
+        	normalize likelihoods --normalize takes this set and divide each element by the list sum
+        						  --here, the list sum is also the tree probabilities! (Amazingly :)
 
 expectationsFromObsNoOrder::ProbFSTA -> ObservedEvent -> SoftCounts
 expectationsFromObsNoOrder m e = 
@@ -93,6 +114,7 @@ expectationsFromObsNoOrder m e =
 
 -- This just tallies up all the expected/soft counts across all observed events 
 -- from all string in the corpus.
+-- The big sum!
 expectationsFromCorpus :: ProbFSTA -> [Tree] -> SoftCounts
 expectationsFromCorpus fsta trees =
     sumCounts [expectationsFromObs fsta o| s <- trees, o <- observedEvents s]
