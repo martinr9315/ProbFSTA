@@ -1,4 +1,3 @@
-from pfsta import PFSTA, Node, TreeContext
 from over_under import (get_address_list, get_context, get_node,
                         possible_lists, prob_over, prob_under)
 
@@ -22,12 +21,12 @@ class HiddenEvent:
         if self.start:
             print('HStart', self.state, end=' ')
         else:
-            print('HStep', self.state, self.label, self.children_states, end=' ')
+            print('HStep', self.state, self.label, 
+                  self.children_states, end=' ')
 
 
 class SoftCounts:
     hidden_events = {}  # where hidden_events is dict of {HiddenEvent: Double}
-                        # is there a point in this??
 
     def __init__(self):
         self.hidden_events = {}

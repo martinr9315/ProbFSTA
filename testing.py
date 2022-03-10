@@ -1,6 +1,8 @@
 from pfsta import PFSTA, Node
 import over_under
-from expectation_maximization import ObservedEvents, expectations_from_observation, sum_counts
+from expectation_maximization import (ObservedEvents,
+                                      expectations_from_observation,
+                                      sum_counts)
 # -------------------Testing------------
 
 
@@ -44,4 +46,4 @@ result = expectations_from_observation(pfsta1, observed)
 for r in result:
     r.print()
 
-# (sum_counts(result)).print()
+(sum_counts(result))  # .print()
