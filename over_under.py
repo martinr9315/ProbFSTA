@@ -65,11 +65,19 @@ def get_context(root, address):  # getCxt
     return context
 
 
-def print_tree(node):  # getAdsList
-    if node:
-        node.print_address()
-        for i, n in enumerate(node.children):
-            print_tree(n)
+def get_address_list(node):
+    result = []
+    traverse(node, result)
+    return result
+
+
+def traverse(node, address_list):
+    if not node:
+        return
+    address_list.append(node.address)
+    # node.print_address()  # uncomment to s tree
+    for n in node.children:
+        traverse(n, address_list)
 
 # -------------- Over/Under Utilities ---------------------------
 
@@ -77,6 +85,8 @@ def print_tree(node):  # getAdsList
 def possible_lists(pfsta, n):
     return set(list(itertools.permutations(pfsta.q, n)) +
                list(itertools.combinations_with_replacement(pfsta.q, n)))
+
+# TODO: possible_lists_no_order 
 
 
 def zip_three(s1, s2, s3):
@@ -189,7 +199,7 @@ def prob_under(pfsta, node, state):
             sum = 0
             for st in state_seq:
                 zipped = list(zip(node.children, st))
-                product = pfsta.transition_prob((state, node.label, st))
+                product = pfsta.transition_prob((state, node.label, st))  # this is where to fix for no order
                 for z in zipped:
                     product *= prob_under(pfsta, z[0], z[1])
                 sum += product
@@ -243,38 +253,3 @@ def tree_prob_via_over(pfsta, node):
     for state in pfsta.q:
         sum += pfsta.start_prob(state)*prob_over(pfsta, get_context(node, ""), state)
     return sum
-
-# -------------------Testing------------
-
-
-root1 = Node('a')
-root1.set_address('')
-root1.children = [Node('b'), Node('c')]
-root1.children[1].children = [Node('d'), Node('e')]
-assign_addresses(root1)
-# print_tree(root1)
-# trees = read_trees("test_trees.parsed")
-
-pfsta1 = PFSTA([1, 2, 3],
-               {1: 1.0},
-               {(1, 'a', (2)): 0.2,
-                (1, 'a', (2, 2)): 0.3,
-                (2, 'c', (3, 3)): 0.2,
-                (2, 'b', ()): 0.1,
-                (3, 'd', ()): 0.1,
-                (3, 'e', ()): 0.1})
-
-pfsta2 = PFSTA([1, 2, 3],
-               {1: 1.0},
-               {(1, 'a', (2)): 0.2,
-                (1, 'a', (1, 2)): 0.3,
-                (2, 'c', (2, 3)): 0.2,
-                (2, 'b', ()): 0.1,
-                (3, 'd', ()): 0.1,
-                (3, 'e', ()): 0.1})
-
-# print(prob_under(pfsta1, root1, 1))
-# print(prob_over(pfsta1, get_context(root1, "0"), 2))
-
-print(tree_prob_via_under(pfsta1, root1))
-print(tree_prob_via_over(pfsta1, root1))
