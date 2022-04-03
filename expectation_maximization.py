@@ -1,5 +1,6 @@
 from over_under import (get_address_list, get_context, get_node,
-                        possible_lists, prob_over, prob_under)
+                        possible_lists, prob_over, prob_under, tree_prob_via_under)
+from pfsta import PFSTA
 
 
 class HiddenEvent:
@@ -30,7 +31,7 @@ class SoftCounts:
 
     def __init__(self):
         self.hidden_events = {}
-    
+
     def print(self):
         for k, v in self.hidden_events.items():
             k.print()
@@ -94,11 +95,6 @@ def expectations_from_observation(pfsta, observed_events):
         context = t_event[1]
         k = len(node.children)
         if k == 0:
-            # if has len 'after' == 0 aka no children 
-            # then let likelihoods = M.fromList [(HStep q1 str q2, 
-            # overValue m before q1 * trProb m (q1,q2) str * 
-            # WHY DO I NEED THIS LINE: product(map (\(sbt, st) -> underValue m sbt st) (zip after q2)))  | q1 <- states, q2 <- [[]]] in 
-        	# normalize likelihoods
             for q1 in pfsta.q:
                 q2 = (())
                 h_event = HiddenEvent()
@@ -109,10 +105,6 @@ def expectations_from_observation(pfsta, observed_events):
             normalize(t_soft_count.hidden_events)
             total_soft_counts.append(t_soft_count)
         else:
-            # let likelihoods = M.fromList [(HStep q1 str q2, 
-            # overValue m before q1 * trProb m (q1,q2) str * 
-            # product(map (\(sbt, st) -> underValue m sbt st) (zip after q2))) | q1 <- states, q2 <- possList k states] in 
-        	# normalize likelihoods
             for q1 in pfsta.q:
                 state_seq = possible_lists(pfsta, k)
                 for q2 in state_seq:
@@ -127,3 +119,41 @@ def expectations_from_observation(pfsta, observed_events):
             normalize(t_soft_count.hidden_events)
             total_soft_counts.append(t_soft_count)
     return total_soft_counts
+
+
+def expectations_from_corpus(pfsta, trees):
+    all_soft_counts = []
+    for t in trees:
+        observed = ObservedEvents(t)
+        all_soft_counts += expectations_from_observation(pfsta, observed)
+    return all_soft_counts
+
+# -------------------M-step------------------
+
+
+def estimate_from_counts(states, soft_counts):
+    start_dist = {}
+    step_dist = {}
+    for hidden_event, prob in soft_counts.hidden_events.items():
+        if hidden_event.start:
+            start_dist[hidden_event.state] = prob
+        else:
+            step_dist[(hidden_event.state, hidden_event.label,
+                       hidden_event.children_states)] = prob
+    normalize(start_dist)
+    normalize(step_dist)
+    new_pfsta = PFSTA(states, start_dist, step_dist)
+    return new_pfsta
+
+
+def update(pfsta, trees):
+    expected_counts = expectations_from_corpus(pfsta, trees)
+    new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
+    return new_pfsta
+
+
+def likelihood(pfsta, trees):
+    product = 1
+    for t in trees:
+        product *= tree_prob_via_under(pfsta, t)
+    return product

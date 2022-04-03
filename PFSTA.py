@@ -31,6 +31,8 @@ class Node:
         self.label = label
         self.over = None
         self.under = {}
+        # initialize
+        self.context = None
 
     def set_address(self, address):
         self.address = address
