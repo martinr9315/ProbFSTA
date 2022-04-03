@@ -1,5 +1,6 @@
 from over_under import (get_address_list, get_context, get_node,
-                        possible_lists, prob_over, prob_under, tree_prob_via_under)
+                        possible_lists, prob_over, prob_under,
+                        tree_prob_via_under)
 from pfsta import PFSTA
 
 
@@ -22,7 +23,7 @@ class HiddenEvent:
         if self.start:
             print('HStart', self.state, end=' ')
         else:
-            print('HStep', self.state, self.label, 
+            print('HStep', self.state, self.label,
                   self.children_states, end=' ')
 
 
@@ -46,7 +47,8 @@ class ObservedEvents:
         self.start_event = node
         addresses = get_address_list(node)
         for a in addresses:
-            self.transition_events.append((get_node(node, a), get_context(node, a)))
+            self.transition_events.append((get_node(node, a),
+                                           get_context(node, a)))
 
     def print(self):
         print('Start:', end=' ')
@@ -84,7 +86,7 @@ def expectations_from_observation(pfsta, observed_events):
     for state in pfsta.q:
         h_event = HiddenEvent()
         h_event.set_start(state)
-        soft_start_counts.hidden_events[h_event] = pfsta.start_prob(state) * prob_under(pfsta, observed_events.start_event, state)
+        soft_start_counts.hidden_events[h_event] = (pfsta.start_prob(state) * prob_under(pfsta, observed_events.start_event, state))
     normalize(soft_start_counts.hidden_events)
     total_soft_counts.append(soft_start_counts)
     
@@ -121,12 +123,13 @@ def expectations_from_observation(pfsta, observed_events):
     return total_soft_counts
 
 
+# ?? not sure on this
 def expectations_from_corpus(pfsta, trees):
     all_soft_counts = []
     for t in trees:
         observed = ObservedEvents(t)
         all_soft_counts += expectations_from_observation(pfsta, observed)
-    return all_soft_counts
+    return sum_counts(all_soft_counts)
 
 # -------------------M-step------------------
 

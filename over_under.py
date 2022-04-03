@@ -1,5 +1,5 @@
 
-from pfsta import PFSTA, Node, TreeContext
+from pfsta import Node, TreeContext
 import itertools
 
 #  ----------- Tree utilities -------------
@@ -75,9 +75,16 @@ def traverse(node, address_list):
     if not node:
         return
     address_list.append(node.address)
-    # node.print_address()  # uncomment to s tree
+    node.print_address()  # uncomment to s tree
     for n in node.children:
         traverse(n, address_list)
+
+
+def print_tree(node):
+    if node:
+        node.print()
+        for n in node.children:
+            print_tree(n)
 
 # -------------- Over/Under Utilities ---------------------------
 
@@ -199,7 +206,8 @@ def prob_under(pfsta, node, state):
             sum = 0
             for st in state_seq:
                 zipped = list(zip(node.children, st))
-                product = pfsta.transition_prob((state, node.label, st))  # this is where to fix for no order
+                # this is where to fix for no order
+                product = pfsta.transition_prob((state, node.label, st)) 
                 for z in zipped:
                     product *= prob_under(pfsta, z[0], z[1])
                 sum += product

@@ -2,7 +2,7 @@ from pfsta import PFSTA, Node
 import over_under
 from expectation_maximization import (ObservedEvents,
                                       expectations_from_observation,
-                                      sum_counts, estimate_from_counts)
+                                      estimate_from_counts)
 # -------------------Testing------------
 
 
