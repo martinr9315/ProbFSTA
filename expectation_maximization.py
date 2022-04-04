@@ -5,7 +5,7 @@ from pfsta import PFSTA
 
 
 class HiddenEvent:
-    state = None  # this was mother state .. why?
+    state = None  
     label = None
     children_states = []
     start = False
@@ -123,7 +123,6 @@ def expectations_from_observation(pfsta, observed_events):
     return total_soft_counts
 
 
-# ?? not sure on this
 def expectations_from_corpus(pfsta, trees):
     all_soft_counts = []
     for t in trees:
