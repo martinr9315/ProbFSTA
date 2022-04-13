@@ -75,7 +75,7 @@ def traverse(node, address_list):
     if not node:
         return
     address_list.append(node.address)
-    node.print_address()  # uncomment to s tree
+    # node.print_address()  # uncomment to s tree
     for n in node.children:
         traverse(n, address_list)
 
@@ -216,35 +216,33 @@ def prob_under(pfsta, node, state):
 
 
 def prob_over(pfsta, context, state):
-    if context.get_over(state):
-        return context.get_over(state)
+    # if context.get_over(state):
+    #     return context.get_over(state)
+    # else:
+    if context.is_root():
+        return pfsta.start_prob(state)
     else:
-        if context.is_root():
-            return pfsta.start_prob(state)
-        else:
-            mother_label = context.mother.label
-            kl = len(context.left_sisters)
-            kr = len(context.right_sisters)
-            poss_list_left = possible_lists(pfsta, kl)
-            poss_list_right = possible_lists(pfsta, kr)
-            zipped = zip_three(poss_list_left, poss_list_right, pfsta.q)
-            sum = 0
-            final_product = 0
-            for l_state_seq, r_state_seq, mom_state in zipped:
-                product = pfsta.transition_prob((mom_state, mother_label, (l_state_seq+(state,)+r_state_seq)))
-                if product:
-                    product *= prob_over(pfsta, context.mother_context, mom_state)
-                    left_under = 1
-                    for i, l_sis in enumerate(context.left_sisters):
-                        left_under *= prob_under(pfsta, l_sis, l_state_seq[i])
-                    right_under = 1
-                    for i, r_sis in enumerate(context.right_sisters):
-                        right_under *= prob_under(pfsta, r_sis, r_state_seq[i])
-                    product *= left_under * right_under
-                    final_product = product
-            sum += final_product
-            context.over[state] = sum
-            return sum
+        mother_label = context.mother.label
+        kl = len(context.left_sisters)
+        kr = len(context.right_sisters)
+        poss_list_left = possible_lists(pfsta, kl)
+        poss_list_right = possible_lists(pfsta, kr)
+        zipped = zip_three(poss_list_left, poss_list_right, pfsta.q)
+        sum = 0
+        for l_state_seq, r_state_seq, mom_state in zipped:
+            product = pfsta.transition_prob((mom_state, mother_label, (l_state_seq+(state,)+r_state_seq)))
+            if product:
+                product *= prob_over(pfsta, context.mother_context, mom_state)
+                left_under = 1
+                for i, l_sis in enumerate(context.left_sisters):
+                    left_under *= prob_under(pfsta, l_sis, l_state_seq[i])
+                right_under = 1
+                for i, r_sis in enumerate(context.right_sisters):
+                    right_under *= prob_under(pfsta, r_sis, r_state_seq[i])
+                product *= left_under * right_under
+            sum += product
+        # context.over[state] = sum
+        return sum
 
 
 # ---------------Tree probabilities------------

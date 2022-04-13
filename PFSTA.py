@@ -21,6 +21,11 @@ class PFSTA:
 
     def transition_prob(self, transition):
         return self.delta.get(transition, 0.0)
+    
+    def print(self):
+        print('Q:',self.q)
+        print('I:',self.i)
+        print('Delta:',self.delta)
     # -------------------------------------
 
 
