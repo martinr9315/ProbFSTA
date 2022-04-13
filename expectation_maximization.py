@@ -132,9 +132,7 @@ def expectations_from_observation(pfsta, observed_events):
 
 def expectations_from_corpus(pfsta, trees):
     all_soft_counts = []
-    print(len(trees))
     for t in trees:
-
         observed = ObservedEvents(t)
         observed.print()
         all_soft_counts += expectations_from_observation(pfsta, observed)
@@ -157,7 +155,6 @@ def estimate_from_counts(states, soft_counts):
     for dist in step_dist.values():
         normalize(dist)
     normalize(start_dist)
-    # normalize(step_dist)
     new_pfsta = PFSTA(states, start_dist, step_dist)
     return new_pfsta
 
