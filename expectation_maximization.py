@@ -54,7 +54,11 @@ class ObservedEvents:
     start_event = None
     transition_events = []  # list of tuples of (node, node context)
 
-    def __init__(self, node):
+    def __init__(self):
+        self.start_event = None
+        self.transition_events = []
+ 
+    def observe(self, node):
         self.start_event = node
         addresses = get_address_list(node)
         for a in addresses:
@@ -117,13 +121,9 @@ def expectations_from_observation(pfsta, observed_events):
                 h_event.set_transition(q1, node.label, q2)
                 prob = (prob_over(pfsta, context, q1)
                         * pfsta.transition_prob((q1, node.label, q2)))
-                # print((q1, node.label, q2))
-                # print("over",prob_over(pfsta, context, q1))
-                # print("t prob",pfsta.transition_prob((q1, node.label, q2)))
                 zipped = zip(node.children, q2)
                 for z in zipped:
                     prob *= prob_under(pfsta, z[0], z[1])
-                    # print("under",prob_under(pfsta, z[0], z[1]))
                 t_soft_count.hidden_events[h_event] = prob
         normalize(t_soft_count.hidden_events)
         total_soft_counts.append(t_soft_count)
@@ -133,8 +133,8 @@ def expectations_from_observation(pfsta, observed_events):
 def expectations_from_corpus(pfsta, trees):
     all_soft_counts = []
     for t in trees:
-        observed = ObservedEvents(t)
-        observed.print()
+        observed = ObservedEvents()
+        observed.observe(t)
         all_soft_counts += expectations_from_observation(pfsta, observed)
     return sum_counts(all_soft_counts)
 
@@ -152,10 +152,13 @@ def estimate_from_counts(states, soft_counts):
             dist_by_state[(hidden_event.state, hidden_event.label, 
                            hidden_event.children_states)] = prob
             step_dist[hidden_event.state] = dist_by_state
+    flattened_step_dist = {}
     for dist in step_dist.values():
         normalize(dist)
+        for k, v in dist.items():
+            flattened_step_dist[k] = v
     normalize(start_dist)
-    new_pfsta = PFSTA(states, start_dist, step_dist)
+    new_pfsta = PFSTA(states, start_dist, flattened_step_dist)
     return new_pfsta
 
 
