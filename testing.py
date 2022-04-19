@@ -60,9 +60,9 @@ debug_pfsta = PFSTA([0, 1],
                     (1, "B", ()): 0.1,
                     (1, "C", ()): 0.1})
 
-expectations_from_corpus(debug_pfsta, [tree1, tree2]).print()
+# expectations_from_corpus(debug_pfsta, [tree1, tree2]).print()
 
-# (update(debug_pfsta, [tree1])).print()
+update(debug_pfsta, [tree1, tree2]).print()
 # print(over_under.prob_under(pfsta1, root1, 1))
 # print(prob_over(pfsta1, get_context(root1, "0"), 2))
 
