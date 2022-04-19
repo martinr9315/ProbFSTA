@@ -1,9 +1,9 @@
-from os import O_RDONLY
 from pfsta import PFSTA, Node
 import over_under
 from expectation_maximization import (ObservedEvents, expectations_from_corpus,
                                       expectations_from_observation,
                                       estimate_from_counts, update)
+import tree_generator
 # -------------------Testing------------
 
 
@@ -62,112 +62,11 @@ debug_pfsta = PFSTA([0, 1],
 
 # expectations_from_corpus(debug_pfsta, [tree1, tree2]).print()
 
-update(debug_pfsta, [tree1, tree2]).print()
-# print(over_under.prob_under(pfsta1, root1, 1))
-# print(prob_over(pfsta1, get_context(root1, "0"), 2))
-
-# print(tree_prob_via_under(pfsta1, root1))
-# print(tree_prob_via_over(pfsta1, root1))
-
-# observed = ObservedEvents(root1)
-# observed.print()
-# observed.start_event.print()
-
-# result = expectations_from_observation(pfsta1, observed)
-# print(result)
-# states = [1, 2, 3]
-# pfsta2 = estimate_from_counts(states, result)
-# for r in result:
-#     r.print()
+# update(debug_pfsta, [tree1, tree2]).print()
 
 
-# HStart 0 : 0.19760479041916168
-# HStart 1 : 0.8023952095808383
-# HStep 0 * (0, 0) : 0.19760479041916165
-# HStep 0 * (0, 1) : 0.0
-# HStep 0 * (1, 0) : 0.0
-# HStep 0 * (1, 1) : 1.0
-# HStep 0 A () : 1.0
-# HStep 0 B () : 0.0
-# HStep 0 C () : 0.0
-
-# HStep 1 * (0, 0) : 0.8023952095808383
-# HStep 1 * (0, 1) : 0.0
-# HStep 1 * (1, 0) : 0.0
-# HStep 1 * (1, 1) : 0.0
-
-# HStep 1 A () : 0.0
-# HStep 1 B () : 1.0
-# HStep 1 C () : 1.0
-
-
-
-# expectations from observations tree 1 only
-# HStart 0 : 0.19760479041916168
-# HStart 1 : 0.8023952095808383
-# HStep 0 * (0, 0) : 0.19760479041916165
-# HStep 0 * (0, 1) : 0.0
-# HStep 0 * (1, 0) : 0.0
-# HStep 0 * (1, 1) : 0.0 --?
-# HStep 0 A () : 1.0
-# HStep 0 B () : 0.0
-# HStep 0 C () : 0.0
-
-# HStep 1 * (0, 0) : 0.8023952095808383
-# HStep 1 * (0, 1) : 0.0
-# HStep 1 * (1, 0) : 0.0
-# HStep 1 * (1, 1) : 0.0
-# HStep 1 A () : 0.0
-# HStep 1 B () : 0.0 --?
-# HStep 1 C () : 0.0 --?
-
-
-
-
-# tree2 only
-# HStart 0 : 0.10963455149501661
-# HStart 1 : 0.8903654485049833
-# HStep 0 * (0, 1) : 0.054817275747508304
-# HStep 0 * (0, 0) : 0.054817275747508304
-# HStep 0 * (1, 0) : 0.0
-# HStep 0 * (1, 1) : 1.0 --?
-# HStep 0 A () : 1.0
-# HStep 0 B () : 0.0
-# HStep 0 C () : 0.0
-
-# HStep 1 * (0, 0) : 0.22259136212624583
-# HStep 1 * (0, 1) : 0.6677740863787375
-# HStep 1 * (1, 0) : 0.0
-# HStep 1 * (1, 1) : 0.0 --?
-# HStep 1 A () : 0.0
-# HStep 1 B () : 0.0 --?
-# HStep 1 C () : 0.0 --?
-
-#tree 3 only
-# HStart 0 : 0.19760479041916168
-# HStart 1 : 0.8023952095808383
-# HStep 0 * (0, 0) : 0.19760479041916165
-# HStep 0 * (0, 1) : 0.0
-# HStep 0 * (1, 0) : 0.0
-# HStep 0 * (1, 1) : 0.0 --?
-# HStep 0 A () : 1.0
-# HStep 0 B () : 0.0
-# HStep 0 C () : 0.0
-
-# HStep 1 * (0, 0) : 0.8023952095808383
-# HStep 1 * (0, 1) : 0.0
-# HStep 1 * (1, 0) : 0.0
-# HStep 1 * (1, 1) : 0.0
-# HStep 1 A () : 0.0 
-# HStep 1 B () : 0.0 --?
-# HStep 1 C () : 0.0 --?
-
-# b_context = over_under.get_context(tree1, "01")
-# c_context = over_under.get_context(tree1, "00").print()
-# print(over_under.tree_prob_via_under(debug_pfsta, tree1))
-# print(over_under.tree_prob_via_over(debug_pfsta, tree1))
-# print(over_under.prob_under(debug_pfsta, tree1.children[0], 0))
-
-# print(over_under.prob_over(debug_pfsta, (over_under.get_context(tree1, "0")), 0))
-# (update(debug_pfsta, [tree1, tree2])).print()
-
+bank = tree_generator.generate_bank(['A', 'B', 'C'], 4, 25)
+tree_generator.remove_inner_node_labels(bank)
+for t in bank:
+    over_under.print_tree(t)
+    print("--")

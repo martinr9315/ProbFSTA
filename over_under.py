@@ -82,7 +82,7 @@ def traverse(node, address_list):
 
 def print_tree(node):
     if node:
-        node.print()
+        node.print_address()
         for n in node.children:
             print_tree(n)
 

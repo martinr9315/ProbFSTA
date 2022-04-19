@@ -13,7 +13,16 @@ def random_tree(alphabet, depth):
         return root
 
 
-tree = random_tree(['*'], 3)
-tree.set_address('')
-over_under.assign_addresses(tree)
-addy = over_under.get_address_list(tree)
+def generate_bank(alphabet, depth, n):
+    bank = []
+    for _ in range(n):
+        t = random_tree(alphabet, depth)
+        t.set_address('')
+        over_under.assign_addresses(t)
+        bank.append(t)
+    return bank
+
+
+def remove_inner_node_labels(bank):
+    for tree in bank:
+        over_under.star_nodes(tree)
