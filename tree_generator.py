@@ -4,7 +4,31 @@ import over_under
 
 #TODO:
 # read in tree from address list (text file)
-# 
+
+
+def read_from_file(file):
+    f = open(file, "r")
+    str = (f.read()).split('--')
+    trees = []
+    for s in str:
+        if s:
+            trees.append(read_from_address(s))
+    return trees
+
+
+def read_from_address(s):
+    s = s.split()
+    s = sorted(s, key=len)
+    tree = Node()
+    tree.set_address('')
+    for a in s[1:]:
+        over_under.assign_addresses(tree)
+        info = a.split(":")
+        address = info[0]
+        label = info[1]
+        mother = over_under.get_node(tree, address[:-1])
+        (mother.children).append(Node(label))
+    return tree
 
 
 def random_tree(alphabet, depth):
@@ -58,4 +82,3 @@ def generate_bank(alphabet, depth, n):
             count += 1
             bank.append(t)
     return bank
-    

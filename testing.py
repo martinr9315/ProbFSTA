@@ -62,7 +62,13 @@ debug_pfsta = PFSTA([0, 1],
 
 # tree_generator.c_command(tree2)
 
-bank = tree_generator.generate_bank(['A', 'B', 'C'], 3, 200)
-for t in bank:
+# bank = tree_generator.generate_bank(['A', 'B', 'C'], 3, 5)
+# for t in bank:
+#     over_under.print_tree(t)
+#     print("--")
+
+trees = tree_generator.read_from_file("trees.txt")
+for t in trees:
+    over_under.assign_addresses(t)
     over_under.print_tree(t)
     print("--")

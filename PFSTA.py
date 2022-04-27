@@ -41,6 +41,9 @@ class Node:
 
     def set_address(self, address):
         self.address = address
+    
+    def set_label(self, label):
+        self.label = label
 
     def star_label(self):
         self.label = '*'
@@ -52,7 +55,7 @@ class Node:
         print("Node "+self.label, end=' ')
 
     def print_address(self):
-        print(self.address+":"+self.label+"->"+str(len(self.children)))
+        print(self.address+":"+self.label)
 
 
 class TreeContext:
