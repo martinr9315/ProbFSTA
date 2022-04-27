@@ -64,10 +64,5 @@ debug_pfsta = PFSTA([0, 1],
 
 bank = tree_generator.generate_bank(['A', 'B', 'C'], 3, 200)
 for t in bank:
-    if tree_generator.c_command(t):
-        over_under.print_tree(t)
-        print("--")
-# tree_generator.remove_inner_node_labels(bank)
-# for t in bank:
-#     over_under.print_tree(t)
-#     print("--")
+    over_under.print_tree(t)
+    print("--")

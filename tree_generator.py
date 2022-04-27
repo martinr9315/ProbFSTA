@@ -49,9 +49,13 @@ def c_command(tree):
 
 def generate_bank(alphabet, depth, n):
     bank = []
-    for _ in range(n):
+    count = 0
+    while count < n:
         t = random_tree(alphabet, depth)
         t.set_address('')
         over_under.assign_addresses(t)
-        bank.append(t)
+        if c_command(t):
+            count += 1
+            bank.append(t)
     return bank
+    
