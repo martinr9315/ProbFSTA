@@ -52,7 +52,7 @@ class Node:
         print("Node "+self.label, end=' ')
 
     def print_address(self):
-        print(self.address+":"+self.label)
+        print(self.address+":"+self.label+"->"+str(len(self.children)))
 
 
 class TreeContext:

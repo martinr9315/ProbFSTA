@@ -27,12 +27,6 @@ tree2.children[1].children = [Node('B'), Node('C')]
 tree2.set_address('')
 over_under.assign_addresses(tree2)
 
-tree3 = Node('*')
-tree3.children = [Node('*'), Node('A')]
-tree3.children[0].children = [Node('C'), Node('B')]
-tree3.set_address('')
-over_under.assign_addresses(tree3)
-
 # pfsta1 = PFSTA([1, 2, 3],
 #                {1: 1.0},
 #                {(1, 'a', (2)): 0.2,
@@ -64,9 +58,16 @@ debug_pfsta = PFSTA([0, 1],
 
 # update(debug_pfsta, [tree1, tree2]).print()
 
+# over_under.prob_under_no_order(debug_pfsta, tree1, '0')
 
-bank = tree_generator.generate_bank(['A', 'B', 'C'], 4, 25)
-tree_generator.remove_inner_node_labels(bank)
+# tree_generator.c_command(tree2)
+
+bank = tree_generator.generate_bank(['A', 'B', 'C'], 3, 200)
 for t in bank:
-    over_under.print_tree(t)
-    print("--")
+    if tree_generator.c_command(t):
+        over_under.print_tree(t)
+        print("--")
+# tree_generator.remove_inner_node_labels(bank)
+# for t in bank:
+#     over_under.print_tree(t)
+#     print("--")
