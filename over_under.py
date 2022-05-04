@@ -3,7 +3,7 @@ from pfsta import Node, TreeContext
 import itertools
 
 
-#  ----------- Tree utilities -------------
+#  ----------- Tree utilities -------------3
 #TODO: poss list no order, over/under no order 
 
 
@@ -90,15 +90,18 @@ def print_tree(node):
 # -------------- Over/Under Utilities ---------------------------
 
 
-def possible_lists(pfsta, n):
-    return set(list(itertools.permutations(pfsta.q, n)) +
-               list(itertools.combinations_with_replacement(pfsta.q, n)))
+def possible_lists(states, n):
+    return set(list(itertools.permutations(states, n)) +
+               list(itertools.combinations_with_replacement(states, n)))
 
 
-def possible_lists_no_order(pfsta, n):
-    #TODO
-    return set(list(itertools.permutations(pfsta.q, n)) +
-               list(itertools.combinations_with_replacement(pfsta.q, n)))
+def possible_lists_no_order(states, n):
+    # done
+    return set(list(itertools.combinations_with_replacement(states, n)))
+
+
+def order(states, n):
+    return set(list(itertools.permutations(states, n)))
 
 
 def zip_three(s1, s2, s3):
@@ -207,7 +210,7 @@ def prob_under(pfsta, node, state):
             return pfsta.transition_prob((state, node.label, ()))
         else:
             k = len(node.children)
-            state_seq = possible_lists(pfsta, k)
+            state_seq = possible_lists(pfsta.q, k)
             sum = 0
             for st in state_seq:
                 zipped = list(zip(node.children, st))
@@ -230,8 +233,8 @@ def prob_over(pfsta, context, state):
         mother_label = context.mother.label
         kl = len(context.left_sisters)
         kr = len(context.right_sisters)
-        poss_list_left = possible_lists(pfsta, kl)
-        poss_list_right = possible_lists(pfsta, kr)
+        poss_list_left = possible_lists(pfsta.q, kl)
+        poss_list_right = possible_lists(pfsta.q, kr)
         zipped = zip_three(poss_list_left, poss_list_right, pfsta.q)
         sum = 0
         for l_state_seq, r_state_seq, mom_state in zipped:
@@ -260,18 +263,24 @@ def prob_under_no_order(pfsta, node, state):
             return pfsta.transition_prob((state, node.label, ()))
         else:
             k = len(node.children)
-            state_seq = possible_lists(pfsta, k) # orderless
-            print(state_seq)
+            state_seq = possible_lists_no_order(pfsta.q, k)  # orderless
             sum = 0
             for st in state_seq:
-                # if the states are not same, generate ordering w/ possible lists 
-                # if ordered, sum accross ordering
-                zipped = list(zip(node.children, st))
-                # this is where to fix for no order - how though
-                product = pfsta.transition_prob((state, node.label, st))
-                for z in zipped:
-                    product *= prob_under(pfsta, z[0], z[1]) # where z[1] is tree and z[1] is a state
-                sum += product
+                if len(set(st)) > 1:  # if the states are not same
+                    ordered_list = order(st, k)  # generate ordering 
+                    # if ordered, sum accross ordering
+                    for ordered_pair in ordered_list:
+                        zipped = list(zip(node.children, ordered_pair))
+                        product = pfsta.transition_prob((state, node.label, ordered_pair))
+                        for z in zipped:
+                            product *= prob_under(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
+                        sum += product
+                else:
+                    zipped = list(zip(node.children, st))
+                    product = pfsta.transition_prob((state, node.label, st))
+                    for z in zipped:
+                        product *= prob_under(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
+                    sum += product
             node.under[state] = sum
             return sum
 
@@ -286,8 +295,8 @@ def prob_over_no_order(pfsta, context, state):
         mother_label = context.mother.label
         kl = len(context.left_sisters)
         kr = len(context.right_sisters)
-        poss_list_left = possible_lists(pfsta, kl)
-        poss_list_right = possible_lists(pfsta, kr)
+        poss_list_left = possible_lists(pfsta.q, kl)
+        poss_list_right = possible_lists(pfsta.q, kr)
         zipped = zip_three(poss_list_left, poss_list_right, pfsta.q)
         sum = 0
         for l_state_seq, r_state_seq, mom_state in zipped:

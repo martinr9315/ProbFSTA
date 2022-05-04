@@ -27,14 +27,14 @@ tree2.children[1].children = [Node('B'), Node('C')]
 tree2.set_address('')
 over_under.assign_addresses(tree2)
 
-pfsta1 = PFSTA([1, 2, 3],
-               {1: 1.0},
-               {(1, 'a', (2)): 0.2,
-                (1, 'a', (2, 2)): 0.3,
-                (2, 'c', (3, 3)): 0.2,
-                (2, 'b', ()): 0.1,
-                (3, 'd', ()): 0.1,
-                (3, 'e', ()): 0.1})
+# pfsta1 = PFSTA([1, 2, 3],
+#                {1: 1.0},
+#                {(1, 'a', (2)): 0.2,
+#                 (1, 'a', (2, 2)): 0.3,
+#                 (2, 'c', (3, 3)): 0.2,
+#                 (2, 'b', ()): 0.1,
+#                 (3, 'd', ()): 0.1,
+#                 (3, 'e', ()): 0.1})
 
 debug_pfsta = PFSTA([0, 1],
                     {0: 0.33, 1: 0.67},
@@ -58,7 +58,7 @@ debug_pfsta = PFSTA([0, 1],
 
 # update(debug_pfsta, [tree1, tree2]).print()
 
-over_under.prob_under_no_order(debug_pfsta, tree1, '0')
+print(over_under.prob_under_no_order(debug_pfsta, tree1, 1))
 
 # tree_generator.c_command(tree2)
 
