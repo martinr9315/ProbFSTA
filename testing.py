@@ -5,7 +5,7 @@ from expectation_maximization import (ObservedEvents, expectations_from_corpus,
                                       estimate_from_counts, update)
 import tree_generator
 # -------------------Testing------------
-#TODO: randomly initialize pfsta - binary (for now )
+
 
 # root1 = Node('a')
 # root1.set_address('')
@@ -58,8 +58,6 @@ debug_pfsta = PFSTA([0, 1],
 
 # update(debug_pfsta, [tree1, tree2]).print()
 
-print(over_under.prob_under_no_order(debug_pfsta, tree1, 1))
-print(over_under.prob_under(debug_pfsta, tree1, 1))
 # tree_generator.c_command(tree2)
 
 # bank = tree_generator.generate_bank(['A', 'B', 'C'], 4, 50)
@@ -72,5 +70,13 @@ print(over_under.prob_under(debug_pfsta, tree1, 1))
 #     over_under.assign_addresses(t)
 #     over_under.print_tree(t)
 # #     print("--")
+
 # print(over_under.possible_lists_no_order(pfsta1, 2))
 # print(over_under.possible_lists(pfsta1, 2))
+
+# print(over_under.prob_under_no_order(debug_pfsta, tree1, 1))
+# print(over_under.prob_under(debug_pfsta, tree1, 1))
+
+pfsta_random = PFSTA([0, 1])
+over_under.initialize_random(pfsta_random, 2, ['A', 'B'])
+pfsta_random.print()

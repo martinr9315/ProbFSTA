@@ -1,10 +1,34 @@
 
 from pfsta import Node, TreeContext
 import itertools
+import random
+
+#  ----------- PFSTA utilities -------------
+# Done: randomly initialize pfsta - binary (for now )
 
 
-#  ----------- Tree utilities -------------3
-#TODO: poss list no order, over/under no order 
+def initialize_random(pfsta, n, terminals):
+    state_seq = possible_lists(pfsta.q, n)
+    initial_random = random.sample(range(0, 100), len(pfsta.q))
+    initial_sum = sum(initial_random)
+    initial_probabilites = [(r/initial_sum) for r in initial_random]
+    for i, q in enumerate(pfsta.q):
+        pfsta.i[q] = initial_probabilites[i]
+        delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
+        delta_sum = sum(delta_random)
+        delta_probabilites = [(r/delta_sum) for r in delta_random]
+        j = 0
+        for st in state_seq:  # transition probabilities
+            pfsta.delta[(q, '*', st)] = delta_probabilites[j]
+            j += 1
+        for t in terminals:  # terminal probabilities
+            pfsta.delta[(q, t, ())] = delta_probabilites[j]
+            j += 1
+
+#  ----------- Tree utilities -------------
+# Done: poss list no order
+# Attemped: under no order
+# TODO: over no order
 
 
 def assign_addresses(node):
