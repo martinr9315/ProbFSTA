@@ -5,7 +5,7 @@ from expectation_maximization import (ObservedEvents, expectations_from_corpus,
                                       estimate_from_counts, update)
 import tree_generator
 # -------------------Testing------------
-
+#TODO: randomly initialize pfsta - binary (for now )
 
 # root1 = Node('a')
 # root1.set_address('')
@@ -27,14 +27,14 @@ tree2.children[1].children = [Node('B'), Node('C')]
 tree2.set_address('')
 over_under.assign_addresses(tree2)
 
-# pfsta1 = PFSTA([1, 2, 3],
-#                {1: 1.0},
-#                {(1, 'a', (2)): 0.2,
-#                 (1, 'a', (2, 2)): 0.3,
-#                 (2, 'c', (3, 3)): 0.2,
-#                 (2, 'b', ()): 0.1,
-#                 (3, 'd', ()): 0.1,
-#                 (3, 'e', ()): 0.1})
+pfsta1 = PFSTA([1, 2, 3],
+               {1: 1.0},
+               {(1, 'a', (2)): 0.2,
+                (1, 'a', (2, 2)): 0.3,
+                (2, 'c', (3, 3)): 0.2,
+                (2, 'b', ()): 0.1,
+                (3, 'd', ()): 0.1,
+                (3, 'e', ()): 0.1})
 
 debug_pfsta = PFSTA([0, 1],
                     {0: 0.33, 1: 0.67},
@@ -58,17 +58,19 @@ debug_pfsta = PFSTA([0, 1],
 
 # update(debug_pfsta, [tree1, tree2]).print()
 
-# over_under.prob_under_no_order(debug_pfsta, tree1, '0')
+over_under.prob_under_no_order(debug_pfsta, tree1, '0')
 
 # tree_generator.c_command(tree2)
 
-# bank = tree_generator.generate_bank(['A', 'B', 'C'], 3, 5)
+# bank = tree_generator.generate_bank(['A', 'B', 'C'], 4, 50)
 # for t in bank:
 #     over_under.print_tree(t)
 #     print("--")
 
-trees = tree_generator.read_from_file("trees.txt")
-for t in trees:
-    over_under.assign_addresses(t)
-    over_under.print_tree(t)
-    print("--")
+# trees = tree_generator.read_from_file("trees.txt")
+# for t in trees:
+#     over_under.assign_addresses(t)
+#     over_under.print_tree(t)
+# #     print("--")
+# print(over_under.possible_lists_no_order(pfsta1, 2))
+# print(over_under.possible_lists(pfsta1, 2))

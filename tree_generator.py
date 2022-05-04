@@ -1,9 +1,13 @@
 from pfsta import Node
 import random
 import over_under
+# done:
+#   A and B are not siblings
+#   global variables for n-nary, A c-commands B (only one A/B), A-B siblings
 
-#TODO:
-# read in tree from address list (text file)
+N_ARY = 3  # max children generated node can have
+C_COMMAND = True  # enforce A c-commands B (only one A/B)
+NOT_SIBLINGS = .1  # enforce A-B are allowed to be siblings only x% of the time
 
 
 def read_from_file(file):
@@ -12,11 +16,11 @@ def read_from_file(file):
     trees = []
     for s in str:
         if s:
-            trees.append(read_from_address(s))
+            trees.append(read_from_addresses(s))
     return trees
 
 
-def read_from_address(s):
+def read_from_addresses(s):
     s = s.split()
     s = sorted(s, key=len)
     tree = Node()
@@ -36,7 +40,7 @@ def random_tree(alphabet, depth):
         root = Node(random.choice(alphabet))
         node = root
         if depth != 1:
-            number_children = random.choice(range(4))
+            number_children = random.choice(range(N_ARY + 1))
         else:
             number_children = 0
         if (number_children > 0):
@@ -44,6 +48,23 @@ def random_tree(alphabet, depth):
         for n in range(number_children):
             node.children.append(random_tree(alphabet, depth-1))
         return root
+
+
+def not_siblings(tree):
+    addresses = over_under.get_address_list(tree)
+    a_address = ""
+    b_address = ""
+    for a in addresses:
+        if over_under.get_label(tree, a) == 'A':
+            a_address = a
+        elif over_under.get_label(tree, a) == 'B':
+            b_address = a
+    if len(a_address) == len(b_address):
+        percent = random.choice(range(10))
+        if percent < (NOT_SIBLINGS * 10):
+            return True
+        return False
+    return True
 
 
 def c_command(tree):
@@ -78,7 +99,11 @@ def generate_bank(alphabet, depth, n):
         t = random_tree(alphabet, depth)
         t.set_address('')
         over_under.assign_addresses(t)
-        if c_command(t):
+        if C_COMMAND:
+            if c_command(t) and not_siblings(t):
+                count += 1
+                bank.append(t)
+        else:
             count += 1
             bank.append(t)
     return bank
