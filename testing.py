@@ -59,7 +59,7 @@ debug_pfsta = PFSTA([0, 1],
 # update(debug_pfsta, [tree1, tree2]).print()
 
 print(over_under.prob_under_no_order(debug_pfsta, tree1, 1))
-
+print(over_under.prob_under(debug_pfsta, tree1, 1))
 # tree_generator.c_command(tree2)
 
 # bank = tree_generator.generate_bank(['A', 'B', 'C'], 4, 50)

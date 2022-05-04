@@ -269,17 +269,19 @@ def prob_under_no_order(pfsta, node, state):
                 if len(set(st)) > 1:  # if the states are not same
                     ordered_list = order(st, k)  # generate ordering 
                     # if ordered, sum accross ordering
+                    pair_sum = 0
                     for ordered_pair in ordered_list:
                         zipped = list(zip(node.children, ordered_pair))
                         product = pfsta.transition_prob((state, node.label, ordered_pair))
                         for z in zipped:
-                            product *= prob_under(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
-                        sum += product
+                            product *= prob_under_no_order(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
+                        pair_sum += product
+                    sum += pair_sum
                 else:
                     zipped = list(zip(node.children, st))
                     product = pfsta.transition_prob((state, node.label, st))
                     for z in zipped:
-                        product *= prob_under(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
+                        product *= prob_under_no_order(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
                     sum += product
             node.under[state] = sum
             return sum

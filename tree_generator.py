@@ -107,3 +107,4 @@ def generate_bank(alphabet, depth, n):
             count += 1
             bank.append(t)
     return bank
+    
