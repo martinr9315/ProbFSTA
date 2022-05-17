@@ -1,4 +1,3 @@
-from sys import exc_info
 from pfsta import PFSTA, Node
 import over_under
 from expectation_maximization import (ObservedEvents, expectations_from_corpus,
@@ -77,9 +76,9 @@ debug_pfsta = PFSTA([0, 1],
 # print(over_under.prob_under_no_order(debug_pfsta, tree1, 1))
 # print(over_under.prob_under(debug_pfsta, tree1, 1))
 
-# pfsta_random = PFSTA([0, 1])
-# over_under.initialize_random(pfsta_terandom, 2, ['A', 'B'])
-# pfsta_random.print()
+pfsta_random = PFSTA([0, 1])
+over_under.initialize_random_no_order(pfsta_random, 2, ['A', 'B'])
+pfsta_random.print()
 
 
 debugNO_FSTA = PFSTA([0, 1],
@@ -106,7 +105,5 @@ initial_debugging = PFSTA( [0, 1],
 # update(initial_debugging, [tree1, tree2, tree1]).print()
 # update(debugNO_FSTA, [tree1, tree2, tree1]).print()
 
-print(over_under.prob_over(initial_debugging, over_under.get_context(tree1, "1"), 1))
-print(over_under.prob_over_no_order(initial_debugging, over_under.get_context(tree1, "1"), 1))
-
-# print(over_under.prob_over_no_order(initial_debugging, over_under.get_context(tree1, "01"), 1))
+# print(over_under.prob_over(initial_debugging, over_under.get_context(tree1, "1"), 1))
+# print(over_under.prob_over_no_order(initial_debugging, over_under.get_context(tree1, "1"), 1))
