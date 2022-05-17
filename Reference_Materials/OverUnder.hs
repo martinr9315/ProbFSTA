@@ -175,28 +175,28 @@ updateNNoOrder n m trees = updateNoOrder (updateNNoOrder (n-1) m trees) trees
 
 
 
-treesets_debugging::[Tree]
-treesets_debugging = [Branching "*" [Branching "*" [Leaf "C",Leaf "B"],Leaf "A"],
-             Branching "*" [Leaf "A",Branching "*" [Leaf "B",Leaf "C"]],
-             Branching "*" [Branching "*" [Leaf "C",Leaf "B"],Leaf "A"]]
+-- treesets_debugging::[Tree]
+-- treesets_debugging = [Branching "*" [Branching "*" [Leaf "C",Leaf "B"],Leaf "A"],
+--              Branching "*" [Leaf "A",Branching "*" [Leaf "B",Leaf "C"]],
+--              Branching "*" [Branching "*" [Leaf "C",Leaf "B"],Leaf "A"]]
 
-tree1 = Branching "*" [Branching "*" [Leaf "C",Leaf "B"],Leaf "A"]
+-- tree1 = Branching "*" [Branching "*" [Leaf "C",Leaf "B"],Leaf "A"]
 
-initial_debugging::ProbFSTA
-initial_debugging = ([(0, 0.33),(1, 0.67)],
-                     [((0, "*", [0, 0]), 0.1),
-  ((0, "*", [0, 1]), 0.05),
-  ((0, "*", [0, 2]), 0.04),
-  ((0, "*", [1, 1]), 0.01),
-  ((0, "*", [1, 2]), 0.2),
-  ((0, "*", [2, 2]), 0.5),
-  ((0, "A", []), 0.1),
-  ((1, "*", [0, 0]), 0.2),
-  ((1, "*", [0, 1]), 0.3),
-  ((1, "*", [0, 2]), 0.01),
-  ((1, "*", [1, 1]), 0.02),
-  ((1, "*", [1, 2]), 0.07),
-  ((1, "*", [2, 2]), 0.2),
-  ((1, "B", []), 0.1), 
-  ((1, "C", []), 0.1)],
- [0, 1])
+-- initial_debugging::ProbFSTA
+-- initial_debugging = ([(0, 0.33),(1, 0.67)],
+--                      [((0, "*", [0, 0]), 0.1),
+--   ((0, "*", [0, 1]), 0.05),
+--   ((0, "*", [0, 2]), 0.04),
+--   ((0, "*", [1, 1]), 0.01),
+--   ((0, "*", [1, 2]), 0.2),
+--   ((0, "*", [2, 2]), 0.5),
+--   ((0, "A", []), 0.1),
+--   ((1, "*", [0, 0]), 0.2),
+--   ((1, "*", [0, 1]), 0.3),
+--   ((1, "*", [0, 2]), 0.01),
+--   ((1, "*", [1, 1]), 0.02),
+--   ((1, "*", [1, 2]), 0.07),
+--   ((1, "*", [2, 2]), 0.2),
+--   ((1, "B", []), 0.1), 
+--   ((1, "C", []), 0.1)],
+--  [0, 1])
