@@ -18,7 +18,7 @@ class PFSTA:
 
     def transition_prob(self, transition):
         return self.delta.get(transition, 0.0)
-    
+ 
     def print(self):
         print('Q:', self.q)
         print('I:', self.i)
@@ -31,9 +31,8 @@ class Node:
         self.children = []
         self.address = None
         self.label = label
-        self.over = None
         self.under = {}
-        # initialize
+        self.under_no_order = {}
         self.context = None
 
     def set_address(self, address):
@@ -47,6 +46,9 @@ class Node:
 
     def get_under(self, state):
         return self.under.get(state)
+    
+    def get_under_no_order(self, state):
+        return self.under_no_order.get(state)
 
     def print(self):
         print("Node "+self.label, end=' ')
@@ -63,6 +65,7 @@ class TreeContext:
         self.right_sisters = []
         self.root = False
         self.over = {}
+        self.over_no_order = {}
 
     def set_context(self, mother, mother_context, left_sisters, right_sisters):
         self.mother = mother
@@ -78,6 +81,9 @@ class TreeContext:
 
     def get_over(self, state):
         return self.over.get(state)
+
+    def get_over_no_order(self, state):
+        return self.over_no_order.get(state)
 
     def print(self):
         print("[", end=' ')

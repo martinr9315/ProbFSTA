@@ -115,7 +115,7 @@ def expectations_from_observation(pfsta, observed_events):
         context = t_event[1]
         k = len(node.children)
         for q1 in pfsta.q:
-            state_seq = possible_lists(pfsta, k)
+            state_seq = possible_lists(pfsta.q, k)
             for q2 in state_seq:
                 h_event = HiddenEvent()
                 h_event.set_transition(q1, node.label, q2)
