@@ -1,6 +1,6 @@
 from over_under import (get_address_list, get_context, get_node,
                         possible_lists, prob_over, prob_under,
-                        tree_prob_via_under)
+                        tree_prob_via_under, print_tree)
 from pfsta import PFSTA
 
 
@@ -168,8 +168,41 @@ def update(pfsta, trees):
     return new_pfsta
 
 
+def update_n(pfsta, trees, n):
+    m = pfsta
+    for _ in range(n):
+        m = update(m, trees)
+    return m
+
+
+def update_until_stable(pfsta, corpus):
+    iterations = 0
+    old_likelihood = likelihood(pfsta, corpus)
+    new_likelihood = 0
+    m = pfsta
+    while abs(new_likelihood-old_likelihood) > .0000000000000000001:
+        old_likelihood = likelihood(m, corpus)
+        m = update(m, corpus)
+        new_likelihood = (likelihood(m, corpus))
+        iterations += 1
+    print(iterations)
+    return m
+
+
 def likelihood(pfsta, trees):
     product = 1
     for t in trees:
         product *= tree_prob_via_under(pfsta, t)
+        print(product)
     return product
+
+
+def highest_likelihood(pfstas, trees):
+    highest = likelihood(pfstas[0], trees)
+    index = 0
+    for i, p in enumerate(pfstas):
+        likelihood_p = likelihood(p, trees)
+        if likelihood_p > highest:
+            highest = likelihood_p
+            index = i
+    return pfstas[index]

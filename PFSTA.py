@@ -2,7 +2,7 @@
 
 
 class PFSTA:
-    def __init__(self, q, i={}, delta={}):
+    def __init__(self, q=[], i={}, delta={}):
         self.q = q          # q = [state]
         self.i = i          # i = {state:prob}
         self.delta = delta  # delta = {transition: prob}
@@ -23,6 +23,14 @@ class PFSTA:
         print('Q:', self.q)
         print('I:', self.i)
         print('Delta:', self.delta)
+
+    def clean_print(self):
+        print('Q:', self.q)
+        print('I:', self.i)
+        print('Delta:')
+        for t, k in self.delta.items():
+            if k > .00001:
+                print(str(t)+':'+str(round(k, 4)))
     # -------------------------------------
 
 

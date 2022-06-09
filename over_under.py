@@ -5,45 +5,51 @@ import random
 
 #  ----------- PFSTA utilities -------------
 # Done: randomly initialize pfsta - binary (for now )
+# assign state to A, B, and C
+# insensitive to ordering
+# all trees have resolved dependencies (initial state is C state)
+
+NO_ORDER = True
+ASSIGN_STATES = True    # assignments are hard coded for now
+RESOLVED_DEPENDENCY = True  # initial state is C (2) state for all trees
 
 
 def initialize_random(pfsta, n, terminals):
-    state_seq = possible_lists(pfsta.q, n)
+    pfsta.q = list(range(n+1))
+    if NO_ORDER:
+        state_seq = possible_lists_no_order(pfsta.q, n)
+    else:
+        state_seq = possible_lists(pfsta.q, n)
     initial_random = random.sample(range(0, 100), len(pfsta.q))
     initial_sum = sum(initial_random)
     initial_probabilites = [(r/initial_sum) for r in initial_random]
     for i, q in enumerate(pfsta.q):
-        pfsta.i[q] = initial_probabilites[i]  # initial probabilities
-        delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
+        if RESOLVED_DEPENDENCY:
+            pfsta.i[2] = 1
+        else:
+            pfsta.i[q] = initial_probabilites[i]  # initial probabilities
+        if ASSIGN_STATES:
+            delta_random = random.sample(range(0, 100), len(state_seq)+1)
+        else:
+            delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
         delta_sum = sum(delta_random)
         delta_probabilites = [(r/delta_sum) for r in delta_random]
         j = 0
         for st in state_seq:  # transition probabilities
             pfsta.delta[(q, '*', st)] = delta_probabilites[j]
             j += 1
-        for t in terminals:  # terminal probabilities
-            pfsta.delta[(q, t, ())] = delta_probabilites[j]
-            j += 1
-
-
-def initialize_random_no_order(pfsta, n, terminals):
-    state_seq = possible_lists_no_order(pfsta.q, n)
-    initial_random = random.sample(range(0, 100), len(pfsta.q))
-    initial_sum = sum(initial_random)
-    initial_probabilites = [(r/initial_sum) for r in initial_random]
-    for i, q in enumerate(pfsta.q):
-        pfsta.i[q] = initial_probabilites[i]  # initial probabilities
-        delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
-        delta_sum = sum(delta_random)
-        delta_probabilites = [(r/delta_sum) for r in delta_random]
-        j = 0
-        for st in state_seq:  # transition probabilities
-            pfsta.delta[(q, '*', st)] = delta_probabilites[j]
-            j += 1
-        for t in terminals:  # terminal probabilities
-            pfsta.delta[(q, t, ())] = delta_probabilites[j]
-            j += 1
-
+        if ASSIGN_STATES:
+            if q == 0:
+                pfsta.delta[(q, 'A', ())] = delta_probabilites[j]
+            elif q == 1:
+                pfsta.delta[(q, 'B', ())] = delta_probabilites[j]
+            elif q == 2:
+                pfsta.delta[(q, 'C', ())] = delta_probabilites[j]
+            else:
+                for t in terminals:  # terminal probabilities
+                    pfsta.delta[(q, t, ())] = delta_probabilites[j]
+                    j += 1
+    
 #  ----------- Tree utilities -------------
 # Done: poss list no order, under no order, over no order
 

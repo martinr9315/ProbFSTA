@@ -1,11 +1,12 @@
 from pfsta import Node
 import random
 import over_under
+
 # done:
 #   A and B are not siblings
 #   global variables for n-nary, A c-commands B (only one A/B), A-B siblings
 
-N_ARY = 3  # max children generated node can have
+N_ARY = 2  # max children generated node can have
 C_COMMAND = True  # enforce A c-commands B (only one A/B)
 NOT_SIBLINGS = .1  # enforce A-B are allowed to be siblings only x% of the time
 
@@ -17,6 +18,8 @@ def read_from_file(file):
     for s in str:
         if s:
             trees.append(read_from_addresses(s))
+    for t in trees:
+        over_under.assign_addresses(t)
     return trees
 
 
@@ -40,7 +43,7 @@ def random_tree(alphabet, depth):
         root = Node(random.choice(alphabet))
         node = root
         if depth != 1:
-            number_children = random.choice(range(N_ARY + 1))
+            number_children = random.choice([0, N_ARY])
         else:
             number_children = 0
         if (number_children > 0):
