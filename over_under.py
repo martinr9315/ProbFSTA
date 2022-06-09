@@ -9,9 +9,9 @@ import random
 # insensitive to ordering
 # all trees have resolved dependencies (initial state is C state)
 
-NO_ORDER = True
+NO_ORDER = False
 ASSIGN_STATES = True    # assignments are hard coded for now
-RESOLVED_DEPENDENCY = True  # initial state is C (2) state for all trees
+RESOLVED_DEPENDENCY = False  # initial state is C (2) state for all trees
 
 
 def initialize_random(pfsta, n, terminals):
@@ -25,6 +25,8 @@ def initialize_random(pfsta, n, terminals):
     initial_probabilites = [(r/initial_sum) for r in initial_random]
     for i, q in enumerate(pfsta.q):
         if RESOLVED_DEPENDENCY:
+            pfsta.i[0] = 0
+            pfsta.i[1] = 0
             pfsta.i[2] = 1
         else:
             pfsta.i[q] = initial_probabilites[i]  # initial probabilities
@@ -41,14 +43,20 @@ def initialize_random(pfsta, n, terminals):
         if ASSIGN_STATES:
             if q == 0:
                 pfsta.delta[(q, 'A', ())] = delta_probabilites[j]
+                pfsta.delta[(q, 'B', ())] = 0.0
+                pfsta.delta[(q, 'C', ())] = 0.0
             elif q == 1:
                 pfsta.delta[(q, 'B', ())] = delta_probabilites[j]
+                pfsta.delta[(q, 'A', ())] = 0.0
+                pfsta.delta[(q, 'C', ())] = 0.0
             elif q == 2:
                 pfsta.delta[(q, 'C', ())] = delta_probabilites[j]
-            else:
-                for t in terminals:  # terminal probabilities
-                    pfsta.delta[(q, t, ())] = delta_probabilites[j]
-                    j += 1
+                pfsta.delta[(q, 'A', ())] = 0.0
+                pfsta.delta[(q, 'B', ())] = 0.0
+        else:
+            for t in terminals:  # terminal probabilities
+                pfsta.delta[(q, t, ())] = delta_probabilites[j]
+                j += 1
     
 #  ----------- Tree utilities -------------
 # Done: poss list no order, under no order, over no order
@@ -143,7 +151,6 @@ def possible_lists(states, n):
 
 
 def possible_lists_no_order(states, n):
-    # done
     return set(list(itertools.combinations_with_replacement(states, n)))
 
 

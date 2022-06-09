@@ -1,11 +1,12 @@
 from over_under import (get_address_list, get_context, get_node,
                         possible_lists, prob_over, prob_under,
-                        tree_prob_via_under, print_tree)
+                        prob_under_no_order, prob_over_no_order,
+                        tree_prob_via_under)
 from pfsta import PFSTA
 
 
 class HiddenEvent:
-    state = None  
+    state = None
     label = None
     children_states = []
     start = False
@@ -130,6 +131,39 @@ def expectations_from_observation(pfsta, observed_events):
     return total_soft_counts
 
 
+def expectations_from_observation_no_order(pfsta, observed_events):
+    total_soft_counts = []
+    # for start node:
+    soft_start_counts = SoftCounts()
+    for state in pfsta.q:
+        h_event = HiddenEvent()
+        h_event.set_start(state)
+        soft_start_counts.hidden_events[h_event] = (pfsta.start_prob(state) * prob_under_no_order(pfsta, observed_events.start_event, state))
+    normalize(soft_start_counts.hidden_events)
+    total_soft_counts.append(soft_start_counts)
+
+    # for transitions:
+    for t_event in observed_events.transition_events:
+        t_soft_count = SoftCounts()
+        node = t_event[0]
+        context = t_event[1]
+        k = len(node.children)
+        for q1 in pfsta.q:
+            state_seq = possible_lists(pfsta.q, k)
+            for q2 in state_seq:
+                h_event = HiddenEvent()
+                h_event.set_transition(q1, node.label, q2)
+                prob = (prob_over_no_order(pfsta, context, q1)
+                        * pfsta.transition_prob((q1, node.label, q2)))
+                zipped = zip(node.children, q2)
+                for z in zipped:
+                    prob *= prob_under(pfsta, z[0], z[1])
+                t_soft_count.hidden_events[h_event] = prob
+        normalize(t_soft_count.hidden_events)
+        total_soft_counts.append(t_soft_count)
+    return total_soft_counts
+
+
 def expectations_from_corpus(pfsta, trees):
     all_soft_counts = []
     for t in trees:
@@ -137,6 +171,16 @@ def expectations_from_corpus(pfsta, trees):
         observed.observe(t)
         all_soft_counts += expectations_from_observation(pfsta, observed)
     return sum_counts(all_soft_counts)
+
+
+def expectations_from_corpus_no_order(pfsta, trees):
+    all_soft_counts = []
+    for t in trees:
+        observed = ObservedEvents()
+        observed.observe(t)
+        all_soft_counts += expectations_from_observation_no_order(pfsta, observed)
+    return sum_counts(all_soft_counts)
+
 
 # -------------------M-step------------------
 
@@ -168,6 +212,12 @@ def update(pfsta, trees):
     return new_pfsta
 
 
+def update_no_order(pfsta, trees):
+    expected_counts = expectations_from_corpus_no_order(pfsta, trees)
+    new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
+    return new_pfsta
+
+
 def update_n(pfsta, trees, n):
     m = pfsta
     for _ in range(n):
@@ -193,7 +243,6 @@ def likelihood(pfsta, trees):
     product = 1
     for t in trees:
         product *= tree_prob_via_under(pfsta, t)
-        print(product)
     return product
 
 

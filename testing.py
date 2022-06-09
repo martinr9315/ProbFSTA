@@ -1,8 +1,9 @@
+
 from pfsta import PFSTA, Node
 import over_under
 from expectation_maximization import (ObservedEvents, expectations_from_corpus,
                                       expectations_from_observation,
-                                      estimate_from_counts, highest_likelihood, likelihood, update, update_n, update_until_stable)
+                                      estimate_from_counts, highest_likelihood, likelihood, update, update_n, update_no_order, update_until_stable)
 import tree_generator
 # -------------------Testing------------
 
@@ -53,12 +54,6 @@ debug_pfsta = PFSTA([0, 1],
                     (1, "B", ()): 0.1,
                     (1, "C", ()): 0.1})
 
-# expectations_from_corpus(debug_pfsta, [tree1, tree2]).print()
-
-# update(debug_pfsta, [tree1, tree2]).print()
-
-# tree_generator.c_command(tree2)
-
 # bank = tree_generator.generate_bank(['A', 'B', 'C'], 4, 50)
 # for t in bank:
 #     over_under.print_tree(t)
@@ -68,31 +63,33 @@ debug_pfsta = PFSTA([0, 1],
 trees = tree_generator.read_from_file("trees.txt")
 # for t in bank:
 #     over_under.assign_addresses(t)
-    # over_under.print_tree(t)
-    # print("--")
+#     over_under.print_tree(t)
+#     print("--")
 
+pfstas = [PFSTA()] * 5
+new_pfstas = []
+for p in pfstas:
+    over_under.initialize_random(p, 2, ['A', 'B', 'C'])
+    # p.clean_print()
+    new_p = update_n(p, trees, 20)
+    print(likelihood(p, trees), '-->', likelihood(new_p, trees))
+    # new_pfstas.append(new_p)
+    # new_p.clean_print()
 
-# print(over_under.possible_lists_no_order(pfsta1, 2))
-# print(over_under.possible_lists(pfsta1, 2))
-
-# print(over_under.prob_under_no_order(debug_pfsta, tree1, 1))
-# print(over_under.prob_under(debug_pfsta, tree1, 1))
-
-# pfstas = [PFSTA()] * 5
-# for i in range(5):
-#     pfsta_random = pfstas[i]
-#     over_under.initialize_random_no_order(pfsta_random, 2, ['A', 'B', 'C'])
-#     update_n(pfsta_random, trees, 20)
-
-# best = highest_likelihood(pfstas, trees)
+# best = highest_likelihood(new_pfstas, trees)
 # best.clean_print()
 
-pfsta_random = PFSTA()
-over_under.initialize_random(pfsta_random, 2, ['A', 'B', 'C'])
-pfsta_random.clean_print()
 
-# over_under.initialize_random_no_order(pfsta_random, 2, ['A', 'B', 'C'])
-# update_until_stable(pfsta_random, trees).clean_print()
+# p = PFSTA()
+# over_under.initialize_random(p, 2, ['A', 'B', 'C'])
+# print(likelihood(p, trees))
+# print('________')
+# p.clean_print()
+# print('-->')
+# new_p = update_n(p, trees, 20)
+# print(likelihood(new_p, trees))
+# print('________')
+# new_p.clean_print()
 
 
 debugNO_FSTA = PFSTA([0, 1],
@@ -116,17 +113,8 @@ initial_debugging = PFSTA( [0, 1],
   ((1, "C", ())): 1},
 )
 
-# pfsta_random = PFSTA([0, 1])
-# over_under.initialize_random_no_order(pfsta_random, 2, ['A', 'B', 'C'])
-
-# m = update_until_stable(pfsta_random, trees)
-# m.print()
-
-# print(likelihood(debug_pfsta, [tree1, tree2]))
-
-# update(initial_debugging, [tree1, tree2, tree1]).print()
-# update(debugNO_FSTA, [tree1, tree2, tree1]).print()
-
-# print(over_under.prob_over(initial_debugging, over_under.get_context(tree1, "1"), 1))
-# print(over_under.prob_over_no_order(initial_debugging, over_under.get_context(tree1, "1"), 1))
-
+# print(likelihood(initial_debugging, [tree1, tree2, tree1]))
+# initial_debugging.clean_print()
+# m = update_n(initial_debugging, [tree1, tree2, tree1], 50)
+# m.clean_print()
+# print(likelihood(m, [tree1, tree2, tree1]))
