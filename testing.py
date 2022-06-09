@@ -1,19 +1,11 @@
 
 from pfsta import PFSTA, Node
 import over_under
-from expectation_maximization import (ObservedEvents, expectations_from_corpus,
-                                      expectations_from_observation,
-                                      estimate_from_counts, highest_likelihood, likelihood, update, update_n, update_no_order, update_until_stable)
+from expectation_maximization import (ObservedEvents, highest_likelihood,
+                                      likelihood, update, update_n,
+                                      update_no_order, update_until_stable)
 import tree_generator
 # -------------------Testing------------
-
-# root1 = Node('a')
-# root1.set_address('')
-# root1.children = [Node('b'), Node('c')]
-# root1.children[1].children = [Node('d'), Node('e')]
-# over_under.assign_addresses(root1)
-# print(get_address_list(root1))
-# trees = read_trees("test_trees.parsed")
 
 tree1 = Node('*')
 tree1.children = [Node('*'), Node('A')]
@@ -66,18 +58,18 @@ trees = tree_generator.read_from_file("trees.txt")
 #     over_under.print_tree(t)
 #     print("--")
 
-pfstas = [PFSTA()] * 5
+pfstas = [PFSTA()] * 10
 new_pfstas = []
-for p in pfstas:
+for i, p in enumerate(pfstas):
     over_under.initialize_random(p, 2, ['A', 'B', 'C'])
     # p.clean_print()
     new_p = update_n(p, trees, 20)
-    print(likelihood(p, trees), '-->', likelihood(new_p, trees))
-    # new_pfstas.append(new_p)
+    print(i, likelihood(p, trees), '-->', likelihood(new_p, trees))
+    new_pfstas.append(new_p)
     # new_p.clean_print()
 
-# best = highest_likelihood(new_pfstas, trees)
-# best.clean_print()
+best = highest_likelihood(new_pfstas, trees)
+best.clean_print()
 
 
 # p = PFSTA()
@@ -118,3 +110,9 @@ initial_debugging = PFSTA( [0, 1],
 # m = update_n(initial_debugging, [tree1, tree2, tree1], 50)
 # m.clean_print()
 # print(likelihood(m, [tree1, tree2, tree1]))
+
+
+
+# why are likelihoods lower when states are assigned
+# do i need to adjust tree bank when I assign states?
+# why are likelihoods so low/so similar within a batch

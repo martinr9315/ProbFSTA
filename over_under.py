@@ -10,7 +10,7 @@ import random
 # all trees have resolved dependencies (initial state is C state)
 
 NO_ORDER = False
-ASSIGN_STATES = True    # assignments are hard coded for now
+ASSIGN_STATES = True    # assignments are hard coded for now - 0:A, 1:B, 2:C
 RESOLVED_DEPENDENCY = False  # initial state is C (2) state for all trees
 
 
