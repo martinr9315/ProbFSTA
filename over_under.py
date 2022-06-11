@@ -9,8 +9,9 @@ import random
 # insensitive to ordering
 # all trees have resolved dependencies (initial state is C state)
 
+
 NO_ORDER = False
-ASSIGN_STATES = True    # assignments are hard coded for now - 0:A, 1:B, 2:C
+ASSIGN_STATES = False    # assignments are hard coded for now - 0:A, 1:B, 2:C
 RESOLVED_DEPENDENCY = False  # initial state is C (2) state for all trees
 
 
@@ -20,6 +21,7 @@ def initialize_random(pfsta, n, terminals):
         state_seq = possible_lists_no_order(pfsta.q, n)
     else:
         state_seq = possible_lists(pfsta.q, n)
+    random.seed()
     initial_random = random.sample(range(0, 100), len(pfsta.q))
     initial_sum = sum(initial_random)
     initial_probabilites = [(r/initial_sum) for r in initial_random]
@@ -142,6 +144,12 @@ def print_tree(node):
         for n in node.children:
             print_tree(n)
 
+
+def clear_memos(trees):
+    print("\t\t\t\tcleared")
+    for t in trees:
+        t.clear_tree_memos()
+
 # -------------- Over/Under Utilities ---------------------------
 
 
@@ -248,7 +256,7 @@ def tree_from_string(s, si, ei):
 
 
 def star_nodes(node):
-    if node and len(node.children)>0:
+    if node and len(node.children) > 0:
         node.star_label()
         for i, n in enumerate(node.children):
             star_nodes(n)
@@ -257,8 +265,8 @@ def star_nodes(node):
 # ---------------------Recursive Under & Over------------------------
 
 def prob_under(pfsta, node, state):
-    if node.get_under(state):
-        return node.get_under(state)
+    if pfsta.get_under(node, state):
+        return pfsta.get_under(node, state)
     else:
         if not node.children:
             return pfsta.transition_prob((state, node.label, ()))
@@ -268,18 +276,17 @@ def prob_under(pfsta, node, state):
             sum = 0
             for st in state_seq:
                 zipped = list(zip(node.children, st))
-                # this is where to fix for no order
                 product = pfsta.transition_prob((state, node.label, st)) 
                 for z in zipped:
                     product *= prob_under(pfsta, z[0], z[1])
                 sum += product
-            node.under[state] = sum
+            pfsta.unders[(node, state)] = sum
             return sum
 
 
 def prob_over(pfsta, context, state):
-    if context.get_over(state):
-        return context.get_over(state)
+    if pfsta.get_over(context, state):
+        return pfsta.get_over(context, state)
     else:
         if context.is_root():
             return pfsta.start_prob(state)
@@ -303,15 +310,15 @@ def prob_over(pfsta, context, state):
                         right_under *= prob_under(pfsta, r_sis, r_state_seq[i])
                     product *= left_under * right_under
                 sum += product
-            context.over[state] = sum
+            pfsta.overs[(context, state)] = sum
             return sum
 
 # ---------------------No Order Recursive Under & Over------------------------
 
 
 def prob_under_no_order(pfsta, node, state):
-    if node.get_under_no_order(state):
-        return node.get_under_no_order(state)
+    if (node, state) in UNDER:
+        return UNDER[(node, state)]
     else:
         if not node.children:
             return pfsta.transition_prob((state, node.label, ()))
@@ -342,13 +349,14 @@ def prob_under_no_order(pfsta, node, state):
                     for z in zipped:
                         product *= prob_under_no_order(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
                     sum += product
-            node.under_no_order[state] = sum
+            UNDER[(node, state)] = sum
+            # node.under_no_order[state] = sum
             return sum
 
 
 def prob_over_no_order(pfsta, context, state):
-    if context.get_over_no_order(state):
-        return context.get_over_no_order(state)
+    if (context, state) in OVER:
+        return UNDER[(context, state)]
     else:
         if context.is_root():
             return pfsta.start_prob(state)
@@ -378,7 +386,7 @@ def prob_over_no_order(pfsta, context, state):
                             right_under *= prob_under_no_order(pfsta, r_sis, sis_state_seq[i+kl])
                         product *= left_under * right_under
                     sum += product
-            context.over_no_order[state] = sum
+            UNDER[(context, state)] = sum
             return sum
 
 

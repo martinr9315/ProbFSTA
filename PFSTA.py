@@ -6,6 +6,8 @@ class PFSTA:
         self.q = q          # q = [state]
         self.i = i          # i = {state:prob}
         self.delta = delta  # delta = {transition: prob}
+        self.overs = {}
+        self.unders = {}
         #                     where transition is a tuple of form:
         #                     (state, node_label, [states])
 
@@ -18,7 +20,13 @@ class PFSTA:
 
     def transition_prob(self, transition):
         return self.delta.get(transition, 0.0)
- 
+
+    def get_under(self, node, state):
+        return self.unders.get((node, state))
+
+    def get_over(self, context, state):
+        return self.overs.get((context, state))
+
     def print(self):
         print('Q:', self.q)
         print('I:', self.i)
@@ -39,8 +47,6 @@ class Node:
         self.children = []
         self.address = None
         self.label = label
-        self.under = {}
-        self.under_no_order = {}
         self.context = None
 
     def set_address(self, address):
@@ -52,11 +58,13 @@ class Node:
     def star_label(self):
         self.label = '*'
 
-    def get_under(self, state):
-        return self.under.get(state)
-    
-    def get_under_no_order(self, state):
-        return self.under_no_order.get(state)
+    def clear_tree_memos(self):
+        self.under = {}
+        self.under_no_order = {}
+        if self.context:
+            print('clear over')
+            self.context.over = {}
+            self.context.over_no_order = {}
 
     def print(self):
         print("Node "+self.label, end=' ')
@@ -72,8 +80,6 @@ class TreeContext:
         self.left_sisters = []
         self.right_sisters = []
         self.root = False
-        self.over = {}
-        self.over_no_order = {}
 
     def set_context(self, mother, mother_context, left_sisters, right_sisters):
         self.mother = mother
@@ -86,12 +92,6 @@ class TreeContext:
 
     def is_root(self):
         return self.root
-
-    def get_over(self, state):
-        return self.over.get(state)
-
-    def get_over_no_order(self, state):
-        return self.over_no_order.get(state)
 
     def print(self):
         print("[", end=' ')

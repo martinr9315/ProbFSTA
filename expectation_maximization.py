@@ -1,7 +1,7 @@
 from over_under import (get_address_list, get_context, get_node,
-                        possible_lists, prob_over, prob_under,
+                        possible_lists, possible_lists_no_order, prob_over, prob_under,
                         prob_under_no_order, prob_over_no_order,
-                        tree_prob_via_under)
+                        tree_prob_via_under, order, clear_memos)
 from pfsta import PFSTA
 
 
@@ -149,16 +149,34 @@ def expectations_from_observation_no_order(pfsta, observed_events):
         context = t_event[1]
         k = len(node.children)
         for q1 in pfsta.q:
-            state_seq = possible_lists(pfsta.q, k)
+            state_seq = possible_lists_no_order(pfsta.q, k)
             for q2 in state_seq:
-                h_event = HiddenEvent()
-                h_event.set_transition(q1, node.label, q2)
-                prob = (prob_over_no_order(pfsta, context, q1)
-                        * pfsta.transition_prob((q1, node.label, q2)))
-                zipped = zip(node.children, q2)
-                for z in zipped:
-                    prob *= prob_under(pfsta, z[0], z[1])
-                t_soft_count.hidden_events[h_event] = prob
+                if len(set(q2)) > 1:  # if the states are not same
+                    print('here', q2)
+                    ordered_list = order(q2, k)  # generate ordering 
+                    print(ordered_list)
+                    h_event = HiddenEvent()
+                    h_event.set_transition(q1, node.label, q2)
+                    sum = 0
+                    for ordered_pair in ordered_list: 
+                        # TODO: think i need to fix this transitition prob part
+                        # also check that i finished prob over and under no order? i am suspicious
+                        prob = (prob_over_no_order(pfsta, context, q1)
+                                * pfsta.transition_prob((q1, node.label, ordered_pair)))
+                        zipped = zip(node.children, ordered_pair)
+                        for z in zipped:
+                            prob *= prob_under_no_order(pfsta, z[0], z[1])
+                        sum += prob
+                    t_soft_count.hidden_events[h_event] = sum
+                else:
+                    h_event = HiddenEvent()
+                    h_event.set_transition(q1, node.label, q2)
+                    prob = (prob_over_no_order(pfsta, context, q1)
+                            * pfsta.transition_prob((q1, node.label, q2)))
+                    zipped = zip(node.children, q2)
+                    for z in zipped:
+                        prob *= prob_under_no_order(pfsta, z[0], z[1])
+                    t_soft_count.hidden_events[h_event] = prob
         normalize(t_soft_count.hidden_events)
         total_soft_counts.append(t_soft_count)
     return total_soft_counts
@@ -179,6 +197,7 @@ def expectations_from_corpus_no_order(pfsta, trees):
         observed = ObservedEvents()
         observed.observe(t)
         all_soft_counts += expectations_from_observation_no_order(pfsta, observed)
+        t.clear_tree_memos()
     return sum_counts(all_soft_counts)
 
 
@@ -209,6 +228,8 @@ def estimate_from_counts(states, soft_counts):
 def update(pfsta, trees):
     expected_counts = expectations_from_corpus(pfsta, trees)
     new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
+    pfsta.overs.clear()
+    pfsta.unders.clear()
     return new_pfsta
 
 
