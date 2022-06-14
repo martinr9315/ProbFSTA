@@ -151,26 +151,34 @@ def expectations_from_observation_no_order(pfsta, observed_events):
         for q1 in pfsta.q:
             state_seq = possible_lists_no_order(pfsta.q, k)
             for q2 in state_seq:
+                sum = 0
                 if len(set(q2)) > 1:  # if the states are not same
-                    print('here', q2)
                     ordered_list = order(q2, k)  # generate ordering 
-                    print(ordered_list)
                     h_event = HiddenEvent()
                     h_event.set_transition(q1, node.label, q2)
-                    sum = 0
-                    for ordered_pair in ordered_list: 
-                        # TODO: think i need to fix this transitition prob part
-                        # also check that i finished prob over and under no order? i am suspicious
-                        prob = (prob_over_no_order(pfsta, context, q1)
-                                * pfsta.transition_prob((q1, node.label, ordered_pair)))
+                    trans_prob = 0.0
+                    for ordered_pair in ordered_list:
+                        if pfsta.transition_prob((q1, node.label, ordered_pair)) != 0.0:
+                            trans_prob = pfsta.transition_prob((q1, node.label, ordered_pair))
+                            h_event.set_transition(q1, node.label, ordered_pair)
+                            break
+                    # if ordered, sum accross ordering
+                    pair_sum = 0
+                    for ordered_pair in ordered_list:
+                        prob = prob_over_no_order(pfsta, context, q1) * trans_prob
                         zipped = zip(node.children, ordered_pair)
                         for z in zipped:
                             prob *= prob_under_no_order(pfsta, z[0], z[1])
-                        sum += prob
+                        pair_sum += prob
+                    sum += pair_sum
                     t_soft_count.hidden_events[h_event] = sum
                 else:
                     h_event = HiddenEvent()
                     h_event.set_transition(q1, node.label, q2)
+                    # if (node.label == "C" and q1 == 1) or (node.label == "B" and q1 == 0):
+                    #     h_event.print()
+                    #     print(q1)
+                    #     context.print()
                     prob = (prob_over_no_order(pfsta, context, q1)
                             * pfsta.transition_prob((q1, node.label, q2)))
                     zipped = zip(node.children, q2)
@@ -197,7 +205,6 @@ def expectations_from_corpus_no_order(pfsta, trees):
         observed = ObservedEvents()
         observed.observe(t)
         all_soft_counts += expectations_from_observation_no_order(pfsta, observed)
-        t.clear_tree_memos()
     return sum_counts(all_soft_counts)
 
 
@@ -233,12 +240,6 @@ def update(pfsta, trees):
     return new_pfsta
 
 
-def update_no_order(pfsta, trees):
-    expected_counts = expectations_from_corpus_no_order(pfsta, trees)
-    new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
-    return new_pfsta
-
-
 def update_n(pfsta, trees, n):
     m = pfsta
     for _ in range(n):
@@ -246,17 +247,16 @@ def update_n(pfsta, trees, n):
     return m
 
 
-def update_until_stable(pfsta, corpus):
-    iterations = 0
-    old_likelihood = likelihood(pfsta, corpus)
-    new_likelihood = 0
+def update_no_order(pfsta, trees):
+    expected_counts = expectations_from_corpus_no_order(pfsta, trees)
+    new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
+    return new_pfsta
+
+
+def update_no_order_n(pfsta, trees, n):
     m = pfsta
-    while abs(new_likelihood-old_likelihood) > .0000000000000000001:
-        old_likelihood = likelihood(m, corpus)
-        m = update(m, corpus)
-        new_likelihood = (likelihood(m, corpus))
-        iterations += 1
-    print(iterations)
+    for _ in range(n):
+        m = update_no_order(m, trees)
     return m
 
 
@@ -267,12 +267,8 @@ def likelihood(pfsta, trees):
     return product
 
 
-def highest_likelihood(pfstas, trees):
-    highest = likelihood(pfstas[0], trees)
-    index = 0
-    for i, p in enumerate(pfstas):
-        likelihood_p = likelihood(p, trees)
-        if likelihood_p > highest:
-            highest = likelihood_p
-            index = i
-    return pfstas[index]
+def likelihood_no_order(pfsta, trees):
+    product = 1
+    for t in trees:
+        product *= tree_prob_via_under(pfsta, t)
+    return product

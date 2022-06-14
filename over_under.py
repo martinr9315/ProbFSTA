@@ -11,8 +11,8 @@ import random
 
 
 NO_ORDER = False
-ASSIGN_STATES = False    # assignments are hard coded for now - 0:A, 1:B, 2:C
-RESOLVED_DEPENDENCY = False  # initial state is C (2) state for all trees
+ASSIGN_STATES = True    # assignments are hard coded for now - 0:A, 1:B, 2:C
+RESOLVED_DEPENDENCY = True  # initial state is C (2) state for all trees
 
 
 def initialize_random(pfsta, n, terminals):
@@ -175,6 +175,14 @@ def zip_three(s1, s2, s3):
     return zipped
 
 
+def zip_two(s1, s2):
+    zipped = []
+    for i1 in s1:
+        for i2 in s2:
+            zipped.append((i1, i2))
+    return zipped
+
+
 def filter_through(stset, para):
     possible_states = list(itertools.permutations(stset))
     matches = []
@@ -317,8 +325,8 @@ def prob_over(pfsta, context, state):
 
 
 def prob_under_no_order(pfsta, node, state):
-    if (node, state) in UNDER:
-        return UNDER[(node, state)]
+    if pfsta.get_under(node, state):
+        return pfsta.get_under(node, state)
     else:
         if not node.children:
             return pfsta.transition_prob((state, node.label, ()))
@@ -349,45 +357,45 @@ def prob_under_no_order(pfsta, node, state):
                     for z in zipped:
                         product *= prob_under_no_order(pfsta, z[0], z[1])  # where z[1] is tree and z[1] is a state
                     sum += product
-            UNDER[(node, state)] = sum
-            # node.under_no_order[state] = sum
+            pfsta.unders[(node, state)] = sum
             return sum
 
 
 def prob_over_no_order(pfsta, context, state):
-    if (context, state) in OVER:
-        return UNDER[(context, state)]
+    # if pfsta.get_over(context, state):
+    #     return pfsta.get_over(context, state)
+    # else:
+    if context.is_root():
+        return pfsta.start_prob(state)
     else:
-        if context.is_root():
-            return pfsta.start_prob(state)
-        else:
-            mother_label = context.mother.label
-            kl = len(context.left_sisters)
-            kr = len(context.right_sisters)
-            poss_list_sisters = possible_lists_no_order(pfsta.q, kl+kr)
-            zipped = list(zip(poss_list_sisters, pfsta.q))
-            sum = 0
-            for sis_state_seq, mom_state in zipped:
-                ordered_sis_states = order(sis_state_seq, kl+kr)  # generate ordering 
-                trans_prob = 0
-                for ordered_list in ordered_sis_states:
-                    children = ordered_list[:kl]+(state,)+ordered_list[kl:]
-                    if pfsta.transition_prob((mom_state, mother_label, (children))):
-                        trans_prob = pfsta.transition_prob((mom_state, mother_label, (children)))
-                for ordered_list in ordered_sis_states:
-                    product = trans_prob
-                    if product:
-                        product *= prob_over_no_order(pfsta, context.mother_context, mom_state)
-                        left_under = 1
-                        for i, l_sis in enumerate(context.left_sisters):
-                            left_under *= prob_under_no_order(pfsta, l_sis, sis_state_seq[i])
-                        right_under = 1
-                        for i, r_sis in enumerate(context.right_sisters):
-                            right_under *= prob_under_no_order(pfsta, r_sis, sis_state_seq[i+kl])
-                        product *= left_under * right_under
-                    sum += product
-            UNDER[(context, state)] = sum
-            return sum
+        mother_label = context.mother.label
+        kl = len(context.left_sisters)
+        kr = len(context.right_sisters)
+        poss_list_sisters = possible_lists_no_order(pfsta.q, kl+kr)
+        zipped = list(zip_two(poss_list_sisters, pfsta.q))
+        sum = 0
+        for sis_state_seq, mom_state in zipped:
+            ordered_children = order(sis_state_seq+(state,), kl+kr+1)  # generate ordering 
+            trans_prob = 0
+            for children in ordered_children:
+                if pfsta.transition_prob((mom_state, mother_label, (children))):
+                    trans_prob = pfsta.transition_prob((mom_state, mother_label, (children)))
+            product = trans_prob
+            ##### something here is where there needs to be a split over what goes in the left sister loop and right sister loop
+                children_sum = 0
+                if product:
+                    product *= prob_over_no_order(pfsta, context.mother_context, mom_state)
+                    left_under = 1
+                    for i, l_sis in enumerate(context.left_sisters):
+                        left_under *= prob_under_no_order(pfsta, l_sis, sis_state_seq[i])
+                    right_under = 1
+                    for i, r_sis in enumerate(context.right_sisters):
+                        right_under *= prob_under_no_order(pfsta, r_sis, sis_state_seq[i+kl])
+                    product *= left_under * right_under
+                children_sum += product
+            sum += children_sum
+        pfsta.overs[(context, state)] = sum
+        return sum
 
 
 # ---------------Tree probabilities------------
@@ -396,6 +404,13 @@ def tree_prob_via_under(pfsta, node):
     sum = 0
     for state in pfsta.q:
         sum += pfsta.start_prob(state)*prob_under(pfsta, node, state)
+    return sum
+
+
+def tree_prob_via_under_no_order(pfsta, node):
+    sum = 0
+    for state in pfsta.q:
+        sum += pfsta.start_prob(state)*prob_under_no_order(pfsta, node, state)
     return sum
 
 

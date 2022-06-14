@@ -8,8 +8,6 @@ class PFSTA:
         self.delta = delta  # delta = {transition: prob}
         self.overs = {}
         self.unders = {}
-        #                     where transition is a tuple of form:
-        #                     (state, node_label, [states])
 
     # ------ Grammar utilities ----------
     def all_states(self):
@@ -51,7 +49,7 @@ class Node:
 
     def set_address(self, address):
         self.address = address
-    
+
     def set_label(self, label):
         self.label = label
 
