@@ -9,7 +9,7 @@ class PFSTA:
         self.overs = {}
         self.unders = {}
 
-    # ------ Grammar utilities ----------
+    # ------ Grammar utilities ---------
     def all_states(self):
         return self.q
 
@@ -37,7 +37,7 @@ class PFSTA:
         for t, k in self.delta.items():
             if k > .00001:
                 print(str(t)+':'+str(round(k, 4)))
-    # -------------------------------------
+    # ------------------------------------
 
 
 class Node:
