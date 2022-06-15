@@ -1,9 +1,10 @@
-
 from pfsta import PFSTA, Node
 import over_under
-from expectation_maximization import (ObservedEvents, highest_likelihood,
-                                      likelihood, update, update_n,
-                                      update_no_order, update_until_stable)
+from expectation_maximization import (ObservedEvents,
+                                      likelihood, likelihood_no_order, update, update_n,
+                                      update_no_order, update_no_order_n,
+                                      expectations_from_corpus_no_order,
+                                      expectations_from_corpus)
 import tree_generator
 # -------------------Testing------------
 
@@ -53,36 +54,39 @@ debug_pfsta = PFSTA([0, 1],
 
 
 trees = tree_generator.read_from_file("trees.txt")
-# for t in bank:
-#     over_under.assign_addresses(t)
-#     over_under.print_tree(t)
-#     print("--")
 
-pfstas = [PFSTA()] * 10
 new_pfstas = []
-for i, p in enumerate(pfstas):
+highest = 0
+index = 0
+for i in range(50):
+    p = PFSTA()
     over_under.initialize_random(p, 2, ['A', 'B', 'C'])
     # p.clean_print()
-    new_p = update_n(p, trees, 20)
-    print(i, likelihood(p, trees), '-->', likelihood(new_p, trees))
+    new_p = update_n(p, trees, 50)
+    new_p_likelihood = likelihood(new_p, trees)
+
+    # new_p = update_no_order_n(p, trees, 50)
+    # new_p_likelihood = likelihood_no_order(new_p, trees)
+
+    print(i, likelihood(p, trees), '-->', new_p_likelihood)
+    if new_p_likelihood > highest:
+        index = i
+        highest = new_p_likelihood
     new_pfstas.append(new_p)
     # new_p.clean_print()
 
-best = highest_likelihood(new_pfstas, trees)
+# best = highest_likelihood(new_pfstas, trees)
+best = new_pfstas[index]
 best.clean_print()
+print(highest)
+
 
 
 # p = PFSTA()
 # over_under.initialize_random(p, 2, ['A', 'B', 'C'])
-# print(likelihood(p, trees))
-# print('________')
-# p.clean_print()
-# print('-->')
-# new_p = update_n(p, trees, 20)
-# print(likelihood(new_p, trees))
-# print('________')
+# new_p = update_n(p, [trees[0]], 500)
 # new_p.clean_print()
-
+# print(over_under.tree_prob_via_under(new_p, trees[0]))
 
 debugNO_FSTA = PFSTA([0, 1],
                 {0: 0.67, 1: 0.33},
@@ -102,7 +106,7 @@ initial_debugging = PFSTA( [0, 1],
   (0, "*", (1, 1)): 0.03,
   (0, "A", ()): 0.03,
   (0, "B", ()): 0.02,
-  ((1, "C", ())): 1},
+  (1, "C", ()): 1},
 )
 
 # print(likelihood(initial_debugging, [tree1, tree2, tree1]))
@@ -112,7 +116,45 @@ initial_debugging = PFSTA( [0, 1],
 # print(likelihood(m, [tree1, tree2, tree1]))
 
 
+# expectationsFromCorpusNoOrder initialNO_debugging [tree1]
 
-# why are likelihoods lower when states are assigned
-# do i need to adjust tree bank when I assign states?
-# why are likelihoods so low/so similar within a batch
+# [(HStart 0,1.0),
+# (HStart 1,0.0),
+# (HStep 0 "*" [0,0],1.0),
+# (HStep 0 "*" [0,1],1.0),
+# (HStep 0 "*" [1,1],0.0),
+# (HStep 0 "A" [],1.0),
+# (HStep 0 "B" [],1.0),
+# (HStep 0 "C" [],0.0),
+# (HStep 1 "*" [0,0],0.0),
+# (HStep 1 "*" [0,1],0.0),
+# (HStep 1 "*" [1,1],0.0),
+# (HStep 1 "A" [],0.0),
+# (HStep 1 "B" [],0.0),
+# (HStep 1 "C" [],1.0)]
+
+# expectations_from_corpus_no_order(debugNO_FSTA, [tree1]).print()
+# HStart 0 : 1.0
+# HStart 1 : 0.0
+# HStep 0 * (0, 1) : 0.0 ------ should be 1.0
+# HStep 0 * (1, 1) : 0.0
+# HStep 0 * (0, 0) : 1.0 -- good
+# HStep 1 * (0, 1) : 0.0
+# HStep 1 * (1, 1) : 0.0
+# HStep 1 * (0, 0) : 0.0
+# HStep 0 C () : 0.0
+# HStep 1 C () : 0.0  -- should be 1.0
+# HStep 0 B () : 0.0 --- should be 1.0
+# HStep 1 B () : 0.0
+# HStep 0 A () : 1.0 --good
+# HStep 1 A () : 0.0
+
+
+# cnxt = over_under.get_context(tree1, "00")
+# print(over_under.prob_over_no_order(debugNO_FSTA, cnxt, 0))
+
+# 0 - (0,1)
+# 0 - (0,0)
+# 1 C () - this still issue
+# 0 B () - this still issue
+# 0 A ()

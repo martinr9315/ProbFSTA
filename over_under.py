@@ -1,4 +1,6 @@
 
+# TODO: DEBUG PROB_OVER_NO_ORDER
+
 from pfsta import Node, TreeContext
 import itertools
 import random
@@ -362,40 +364,36 @@ def prob_under_no_order(pfsta, node, state):
 
 
 def prob_over_no_order(pfsta, context, state):
-    # if pfsta.get_over(context, state):
-    #     return pfsta.get_over(context, state)
-    # else:
-    if context.is_root():
-        return pfsta.start_prob(state)
+    if pfsta.get_over(context, state):
+        return pfsta.get_over(context, state)
     else:
-        mother_label = context.mother.label
-        kl = len(context.left_sisters)
-        kr = len(context.right_sisters)
-        poss_list_sisters = possible_lists_no_order(pfsta.q, kl+kr)
-        zipped = list(zip_two(poss_list_sisters, pfsta.q))
-        sum = 0
-        for sis_state_seq, mom_state in zipped:
-            ordered_children = order(sis_state_seq+(state,), kl+kr+1)  # generate ordering 
-            trans_prob = 0
-            for children in ordered_children:
-                if pfsta.transition_prob((mom_state, mother_label, (children))):
-                    trans_prob = pfsta.transition_prob((mom_state, mother_label, (children)))
-            product = trans_prob
-            ##### something here is where there needs to be a split over what goes in the left sister loop and right sister loop
-                children_sum = 0
-                if product:
-                    product *= prob_over_no_order(pfsta, context.mother_context, mom_state)
-                    left_under = 1
-                    for i, l_sis in enumerate(context.left_sisters):
-                        left_under *= prob_under_no_order(pfsta, l_sis, sis_state_seq[i])
-                    right_under = 1
-                    for i, r_sis in enumerate(context.right_sisters):
-                        right_under *= prob_under_no_order(pfsta, r_sis, sis_state_seq[i+kl])
-                    product *= left_under * right_under
-                children_sum += product
-            sum += children_sum
-        pfsta.overs[(context, state)] = sum
-        return sum
+        if context.is_root():
+            return pfsta.start_prob(state)
+        else:
+            mother_label = context.mother.label
+            kl = len(context.left_sisters)
+            kr = len(context.right_sisters)
+            poss_list_sisters = possible_lists_no_order(pfsta.q, kl+kr)
+            zipped = list(zip_two(poss_list_sisters, pfsta.q))
+            sum = 0
+            for mom_state in pfsta.q:
+                sum_here = 0
+                for sis_state_seq in poss_list_sisters:
+                    ordered_children = order(sis_state_seq+(state,), kl+kr+1)  # generate ordering 
+                    trans_prob = 0
+                    for children in ordered_children:
+                        if pfsta.transition_prob((mom_state, mother_label, (children))):
+                            trans_prob = pfsta.transition_prob((mom_state, mother_label, (children)))
+                            break
+                    product = trans_prob
+                    if product:
+                        product *= prob_over_no_order(pfsta, context.mother_context, mom_state)
+                        for i, sis in enumerate(context.left_sisters + context.right_sisters):
+                            product *= prob_under_no_order(pfsta, sis, sis_state_seq[i])
+                    sum_here += product
+                sum += sum_here
+            pfsta.overs[(context, state)] = sum
+            return sum
 
 
 # ---------------Tree probabilities------------
