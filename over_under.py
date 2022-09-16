@@ -1,7 +1,7 @@
 
 # TODO: DEBUG PROB_OVER_NO_ORDER
 
-from pfsta import Node, TreeContext
+from PFSTA import Node, TreeContext
 import itertools
 import random
 
@@ -13,8 +13,8 @@ import random
 
 
 NO_ORDER = False
-ASSIGN_STATES = True    # assignments are hard coded for now - 0:A, 1:B, 2:C
-RESOLVED_DEPENDENCY = True  # initial state is C (2) state for all trees
+ASSIGN_STATES = True   # assignments are hard coded for now - 0:A, 1:B, 2:C
+RESOLVED_DEPENDENCY = False # initial state is C (2) state for all trees
 
 
 def initialize_random(pfsta, n, terminals):
@@ -417,3 +417,26 @@ def tree_prob_via_over(pfsta, node):
     for state in pfsta.q:
         sum += pfsta.start_prob(state)*prob_over(pfsta, get_context(node, ""), state)
     return sum
+
+
+# ------------Interpretable values-------------
+
+def bottom_up(pfsta):
+    bottom_up_val = {}
+    for state in pfsta.q:
+        bottom_up_val[state] = [(transitions, pfsta.delta[transitions]) for transitions in pfsta.delta.keys() if state in transitions[2]]
+    for state, transitions in bottom_up_val.items():
+        curr = {}
+        denom = 0
+        for (tr, prob) in transitions:
+            if state == tr[2][0]:
+                curr[(tr[0], tr[1], ('_', tr[2][1]))] = prob
+                denom += prob
+            if state == tr[2][1]:
+                curr[(tr[0], tr[1], (tr[2][0], '_'))] = prob
+                denom += prob
+        for i, prob in curr.items():
+            curr[i] = prob/denom
+        bottom_up_val[state] = curr
+    return bottom_up_val
+    
