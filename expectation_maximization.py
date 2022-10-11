@@ -1,8 +1,8 @@
 from over_under import (get_address_list, get_context, get_node,
-                        possible_lists, possible_lists_no_order, prob_over, prob_under,
+                        possible_lists, possible_lists_no_order, prob_over, prob_under,tree_prob_via_under_no_order,
                         prob_under_no_order, prob_over_no_order,
                         tree_prob_via_under, order, clear_memos)
-from pfsta import PFSTA
+from PFSTA import PFSTA
 
 
 class HiddenEvent:
@@ -270,5 +270,5 @@ def likelihood(pfsta, trees):
 def likelihood_no_order(pfsta, trees):
     product = 1
     for t in trees:
-        product *= tree_prob_via_under(pfsta, t)
+        product *= tree_prob_via_under_no_order(pfsta, t)
     return product
