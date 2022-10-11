@@ -1,6 +1,7 @@
-from pfsta import Node
+from PFSTA import Node
 import random
 import over_under
+import copy
 
 # done:
 #   A and B are not siblings
@@ -110,4 +111,44 @@ def generate_bank(alphabet, depth, n):
             count += 1
             bank.append(t)
     return bank
+
+
+ #------------Changing geometry------------
+def gap_rotation(bank):
+    tree = copy.deepcopy(bank)
+    for i in tree:
+        addresses = over_under.get_address_list(i)
+        i.set_address('')
+        for a in addresses:
+            if over_under.get_label(i, a) == 'B':
+                tr = Node()
+                tr.label = 'V'
+                node = over_under.get_node(i, a)
+                node.star_label()
+                node.children = [tr]
+        over_under.assign_addresses(i)
+    return tree
+                
+def trans_rotation(bank):
+    tree = copy.deepcopy(bank)
+    for i in tree:
+        addresses = over_under.get_address_list(i)
+        i.set_address('')
+        for a in addresses:
+            if over_under.get_label(i, a) == 'A':
+                node = over_under.get_node(i, a)
+                node.label = 'C'
+            elif over_under.get_label(i, a) == 'B':
+                tr = Node()
+                tr.label = 'V'
+                tr1 = Node()
+                tr1.label = 'NP'
+                node = over_under.get_node(i, a)
+                node.star_label()
+                node.children = [tr, tr1]
+        over_under.assign_addresses(i)
+    return tree 
+                
+
+
     
