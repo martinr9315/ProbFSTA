@@ -20,11 +20,14 @@ import tree_generator
 # tree2.set_address('')
 # over_under.assign_addresses(tree2)
 
-# pfsta1 = PFSTA([0, 1],
-#                {0: 1.0},
-#                {(0, 'a', (1, 1)): 1.0,
-#                 (1, 'b', ()): 1.0,
-#                 })
+pfsta1 = PFSTA([1, 2, 3],
+               {1: 1.0},
+               {(1, 'a', (2)): 0.2,
+                (1, 'a', (2, 2)): 0.3,
+                (2, 'c', (3, 3)): 0.2,
+                (2, 'b', ()): 0.1,
+                (3, 'd', ()): 0.1,
+                (3, 'e', ()): 0.1})
 bank = tree_generator.generate_bank_from_pfsta(pfsta1, 5)
 for t in bank:
     t.set_address('')
