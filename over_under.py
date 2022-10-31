@@ -12,17 +12,17 @@ import random
 # all trees have resolved dependencies (initial state is C state)
 
 
-NO_ORDER = False
+NO_ORDER = True
 ASSIGN_STATES = True   # assignments are hard coded for now - 0:A, 1:B, 2:C
-RESOLVED_DEPENDENCY = False # initial state is C (2) state for all trees
+RESOLVED_DEPENDENCY = False  # initial state is C (2) state for all trees
 
 
 def initialize_random(pfsta, n, terminals):
     pfsta.q = list(range(n+1))
     if NO_ORDER:
-        state_seq = possible_lists_no_order(pfsta.q, n)
+        state_seq = possible_lists_no_order(pfsta.q, 2)
     else:
-        state_seq = possible_lists(pfsta.q, n)
+        state_seq = possible_lists(pfsta.q, 2)
     random.seed()
     initial_random = random.sample(range(0, 100), len(pfsta.q))
     initial_sum = sum(initial_random)
@@ -30,11 +30,15 @@ def initialize_random(pfsta, n, terminals):
     for i, q in enumerate(pfsta.q):
         if RESOLVED_DEPENDENCY:
             pfsta.i[0] = 0
-            pfsta.i[1] = 0
-            pfsta.i[2] = 1
+            pfsta.i[1] = 1
+            pfsta.i[2] = 0
+            pfsta.i[3] = 0
+            pfsta.i[4] = 0
         else:
             pfsta.i[q] = initial_probabilites[i]  # initial probabilities
-        if ASSIGN_STATES:
+        if q == 4:
+            delta_random = random.sample(range(0, 100), len(state_seq))
+        elif ASSIGN_STATES:
             delta_random = random.sample(range(0, 100), len(state_seq)+1)
         else:
             delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
@@ -46,17 +50,25 @@ def initialize_random(pfsta, n, terminals):
             j += 1
         if ASSIGN_STATES:
             if q == 0:
-                pfsta.delta[(q, 'A', ())] = delta_probabilites[j]
-                pfsta.delta[(q, 'B', ())] = 0.0
+                pfsta.delta[(q, 'Wh', ())] = delta_probabilites[j]
                 pfsta.delta[(q, 'C', ())] = 0.0
+                pfsta.delta[(q, 'V', ())] = 0.0
+                pfsta.delta[(q, 'NP', ())] = 0.0
             elif q == 1:
-                pfsta.delta[(q, 'B', ())] = delta_probabilites[j]
-                pfsta.delta[(q, 'A', ())] = 0.0
-                pfsta.delta[(q, 'C', ())] = 0.0
-            elif q == 2:
+                pfsta.delta[(q, 'Wh', ())] = 0.0
                 pfsta.delta[(q, 'C', ())] = delta_probabilites[j]
-                pfsta.delta[(q, 'A', ())] = 0.0
-                pfsta.delta[(q, 'B', ())] = 0.0
+                pfsta.delta[(q, 'V', ())] = 0.0
+                pfsta.delta[(q, 'NP', ())] = 0.0
+            elif q == 2:
+                pfsta.delta[(q, 'Wh', ())] = 0.0
+                pfsta.delta[(q, 'C', ())] = 0.0
+                pfsta.delta[(q, 'V', ())] = delta_probabilites[j]
+                pfsta.delta[(q, 'NP', ())] = 0.0
+            elif q == 3:
+                pfsta.delta[(q, 'Wh', ())] = 0.0
+                pfsta.delta[(q, 'C', ())] = 0.0
+                pfsta.delta[(q, 'V', ())] = 0.0
+                pfsta.delta[(q, 'NP', ())] = delta_probabilites[j]
         else:
             for t in terminals:  # terminal probabilities
                 pfsta.delta[(q, t, ())] = delta_probabilites[j]
