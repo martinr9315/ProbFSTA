@@ -37,6 +37,21 @@ class PFSTA:
         for t, k in self.delta.items():
             if k > .00001:
                 print(str(t)+':'+str(round(k, 4)))
+
+    def pretty_print(self, assignment):
+        for i, k in self.i.items():
+            if k > .00001:
+                print('I:', assignment.get(i, '*'))
+        for t, k in self.delta.items():
+            if k > .00001:
+                if len(t[2]) > 0:
+                    print(assignment.get(t[0], '*'),
+                          "->",
+                          assignment.get(t[2][0], '*'),
+                          assignment.get(t[2][1], '*'))
+                else:
+                    print(assignment.get(t[0], '*'),
+                          "->", t[1])
     # ------------------------------------
 
 

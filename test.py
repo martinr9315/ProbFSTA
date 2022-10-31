@@ -23,29 +23,28 @@ index = 0
 random_initialization_times = []
 update_n_times = []
 likelihood_times = []
-for i in range(1):
+for i in range(5):
     p = PFSTA()
     over_under.initialize_random(p, 4, ['Wh', 'V', 'C', 'NP'])
     # p.clean_print()
-    # p.pretty_print(assignment)
     st = time.time()
     new_p = update_no_order_until(p, trees, 1)
     et = time.time()
-    update_n_times.append(st-et)
+    update_n_times.append(et-st)
     new_p_likelihood = likelihood_no_order(new_p, trees)
     if new_p_likelihood > highest:
         index = i
         highest = new_p_likelihood
     new_pfstas.append(new_p)
     print(i, likelihood_no_order(p, trees), '-->', new_p_likelihood)
-    # new_p.pretty_print(assignment)
+    new_p.pretty_print(assignment)
     print('------')
 
 # best = highest_likelihood(new_pfstas, trees)
 best = new_pfstas[index]
 print("Best:", likelihood_no_order(best, trees))
 best.clean_print()
-# best.pretty_print(assignment)
+best.pretty_print(assignment)
 # print(highest)
 
-print("update until .01 avg time:", sum(update_n_times)/len(update_n_times))
+print("update until 1 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")
