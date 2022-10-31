@@ -1,3 +1,26 @@
+
+
+#### Fall 2022 
+10/17: 
+  Alphabet: {A,C,V,NP}
+  A - licensor
+  V - transitive verb
+  NP - verb object 
+  C - everything else
+
+either A must c-command V or V is siblings with NP
+
+global variables set to:
+N_ARY = 2
+C_COMMAND = True
+NOT_SIBLINGS = 0
+NO_ORDER = True
+ASSIGN_STATES = False
+RESOLVED_DEPENDENCY = False
+
+
+### notes from academic year 2021-2022
+
 #### aiming for this quarter
 * M-step
 * Debugging and make sure that the haskell implementation and the python implementation yield the same result

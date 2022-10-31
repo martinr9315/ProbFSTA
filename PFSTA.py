@@ -19,6 +19,9 @@ class PFSTA:
     def transition_prob(self, transition):
         return self.delta.get(transition, 0.0)
 
+    def possible_transitions(self, state):
+        return [t for t in self.delta if t[0] == state]
+
     def get_under(self, node, state):
         return self.unders.get((node, state))
 
@@ -37,15 +40,32 @@ class PFSTA:
         for t, k in self.delta.items():
             if k > .00001:
                 print(str(t)+':'+str(round(k, 4)))
+    
+    def pretty_print(self, assignment):
+        for i, k in self.i.items():
+            if k > .00001:
+                print('I:', assignment.get(i, '*'))
+        for t, k in self.delta.items():
+            if k > .00001:
+                if len(t[2]) > 0:
+                    print(assignment.get(t[0], '*'),
+                          "->",
+                          assignment.get(t[2][0], '*'),
+                          assignment.get(t[2][1], '*'))
+                else:
+                    print(assignment.get(t[0], '*'),
+                          "->", t[1])
+                                    
     # ------------------------------------
 
 
 class Node:
-    def __init__(self, label="*"):
+    def __init__(self, state=None, label="*"):
         self.children = []
         self.address = None
         self.label = label
         self.context = None
+        self.state = state  # only for use in annotated trees
 
     def set_address(self, address):
         self.address = address
@@ -60,15 +80,17 @@ class Node:
         self.under = {}
         self.under_no_order = {}
         if self.context:
-            print('clear over')
             self.context.over = {}
             self.context.over_no_order = {}
 
     def print(self):
-        print("Node "+self.label, end=' ')
+        if self.state is not None:
+            print("Node "+self.label, self.state, end=' ')
+        else:
+            print("Node "+self.label, end=' ')
 
     def print_address(self):
-        print(self.address+":"+self.label)
+        print(self.address+":", self.label, self.state)
 
 
 class TreeContext:

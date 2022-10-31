@@ -3,6 +3,7 @@ from over_under import (get_address_list, get_context, get_node,
                         prob_under_no_order, prob_over_no_order,
                         tree_prob_via_under, order, clear_memos)
 from PFSTA import PFSTA
+import math
 
 
 class HiddenEvent:
@@ -260,6 +261,18 @@ def update_no_order_n(pfsta, trees, n):
     return m
 
 
+def update_no_order_until(pfsta, trees, e):
+    m = pfsta
+    old_likelihood = 0
+    new_likelihood = likelihood_no_order(pfsta, trees)
+    while abs(old_likelihood-new_likelihood) > e:
+        m = update_no_order_n(m, trees, 5)
+        old_likelihood = new_likelihood
+        new_likelihood = likelihood_no_order(m, trees)
+        print(new_likelihood)
+    return m
+
+
 def likelihood(pfsta, trees):
     product = 1
     for t in trees:
@@ -270,5 +283,7 @@ def likelihood(pfsta, trees):
 def likelihood_no_order(pfsta, trees):
     product = 1
     for t in trees:
-        product *= tree_prob_via_under_no_order(pfsta, t)
+        p = tree_prob_via_under_no_order(pfsta, t)
+        if p != 0:
+            product += math.log(p)
     return product
