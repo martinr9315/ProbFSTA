@@ -1,4 +1,4 @@
-from PFSTA import PFSTA, Node
+from PFSTA import PFSTA
 import over_under
 from expectation_maximization import (ObservedEvents,
                                       likelihood, likelihood_no_order, update, update_n,
@@ -15,7 +15,7 @@ import time
 
 assignment = {0: 'L', 1: 'N', 2: 'V', 3: 'NP', 4: 'UL'}
 
-trees = tree_generator.read_from_file("more_trees.txt")
+trees = tree_generator.read_from_file("treebanks/more_trees.txt")
 
 new_pfstas = []
 highest = -20000000
@@ -30,7 +30,7 @@ for i in range(5):
     p.clean_print()
     print('--')
     st = time.time()
-    new_p = update_no_order_until(p, trees, 1)
+    new_p = update_no_order_until(p, trees, .5)
     et = time.time()
     update_n_times.append(et-st)
     new_p_likelihood = likelihood_no_order(new_p, trees)
@@ -49,4 +49,4 @@ best.clean_print()
 best.pretty_print(assignment)
 # print(highest)
 
-print("update until 1 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")
+print("update until .5 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")

@@ -3,10 +3,6 @@ import random
 import over_under
 import copy
 
-# done:
-#   A and B are not siblings
-#   global variables for n-nary, A c-commands B (only one A/B), A-B siblings
-
 N_ARY = 2  # max children generated node can have
 C_COMMAND = True  # enforce A c-commands B (only one A/B)
 NOT_SIBLINGS = .1  # enforce A-B are allowed to be siblings only x% of the time
@@ -148,7 +144,3 @@ def trans_rotation(bank):
                 node.children = [tr, tr1]
         over_under.assign_addresses(i)
     return tree 
-                
-
-
-    

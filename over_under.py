@@ -1,20 +1,12 @@
-
-# TODO: DEBUG PROB_OVER_NO_ORDER
-
 from PFSTA import Node, TreeContext
 import itertools
 import random
 
 #  ----------- PFSTA utilities -------------
-# Done: randomly initialize pfsta - binary (for now )
-# assign state to A, B, and C
-# insensitive to ordering
-# all trees have resolved dependencies (initial state is C state)
-
 
 NO_ORDER = True
-ASSIGN_STATES = True   # assignments are hard coded for now - 0:A, 1:B, 2:C
-RESOLVED_DEPENDENCY = True  # initial state is C (2) state for all trees
+ASSIGN_STATES = True   # assignments are hard coded for now
+RESOLVED_DEPENDENCY = True  # initial state is 1 (neutral state)
 
 
 def initialize_random(pfsta, n, terminals):
@@ -73,9 +65,8 @@ def initialize_random(pfsta, n, terminals):
             for t in terminals:  # terminal probabilities
                 pfsta.delta[(q, t, ())] = delta_probabilites[j]
                 j += 1
-    
+
 #  ----------- Tree utilities -------------
-# Done: poss list no order, under no order, over no order
 
 
 def assign_addresses(node):
@@ -147,7 +138,7 @@ def traverse(node, address_list):
     if not node:
         return
     address_list.append(node.address)
-    # node.print_address()  # uncomment to s tree
+    # node.print_address()
     for n in node.children:
         traverse(n, address_list)
 
