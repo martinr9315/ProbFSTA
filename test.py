@@ -15,7 +15,7 @@ import time
 
 assignment = {0: 'L', 1: 'N', 2: 'V', 3: 'NP', 4: 'UL'}
 
-trees = tree_generator.read_from_file("less_tree.txt")
+trees = tree_generator.read_from_file("more_trees.txt")
 
 new_pfstas = []
 highest = -20000000
@@ -26,7 +26,9 @@ likelihood_times = []
 for i in range(5):
     p = PFSTA()
     over_under.initialize_random(p, 4, ['Wh', 'V', 'C', 'NP'])
-    # p.clean_print()
+    print(i)
+    p.clean_print()
+    print('--')
     st = time.time()
     new_p = update_no_order_until(p, trees, 1)
     et = time.time()
@@ -36,7 +38,7 @@ for i in range(5):
         index = i
         highest = new_p_likelihood
     new_pfstas.append(new_p)
-    print(i, likelihood_no_order(p, trees), '-->', new_p_likelihood)
+    print(likelihood_no_order(p, trees), '-->', new_p_likelihood)
     new_p.pretty_print(assignment)
     print('------')
 
