@@ -20,22 +20,35 @@ import tree_generator
 # tree2.set_address('')
 # over_under.assign_addresses(tree2)
 
-pfsta1 = PFSTA([1, 2, 3],
-               {1: 1.0},
-               {(1, '*', (2, 3)): 0.5,
-                (1, '*', (2, 2)): 0.5,
-                (2, '*', (3, 3)): 0.2,
-                (2, 'a', ()): 0.8,
-                (3, 'b', ()): 1.0})
-bank = tree_generator.generate_bank_from_pfsta(pfsta1, 5)
+# pfsta1 = PFSTA([1, 2, 3],
+#                {1: 1.0},
+#                {(1, '*', (2, 3)): 0.5,
+#                 (1, '*', (2, 2)): 0.5,
+#                 (2, '*', (3, 3)): 0.2,
+#                 (2, 'a', ()): 0.8,
+#                 (3, 'b', ()): 1.0})
+
+goal_pfsta = PFSTA( [0, 1, 2, 3, 4],
+                    {1: 1.0},
+                    {(0, 'Wh', ()):1.0,
+                    (1, '*', (0, 4)):0.0688,
+                    (1, '*', (1, 1)):0.2982,
+                    (1, '*', (2, 3)):0.2523,
+                    (1, 'C', ()):0.3807,
+                    (2, 'V', ()):1.0,
+                    (3, 'NP', ()):1.0,
+                    (4, '*', (1, 2)):0.6818,
+                    (4, '*', (1, 4)):0.3182})
+
+bank = tree_generator.generate_bank_from_pfsta(goal_pfsta, 10)
 for t in bank:
     t.set_address('')
     over_under.assign_addresses(t)
     over_under.print_tree(t)
     print("--")
 
-p = over_under.initialize_from_pfsta(pfsta1)
-p.clean_print()
+# p = over_under.initialize_from_pfsta(goal_pfsta)
+# p.clean_print()
 
 # debug_pfsta = PFSTA([0, 1],
 #                     {0: 0.33, 1: 0.67},
