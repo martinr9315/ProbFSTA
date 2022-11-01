@@ -15,7 +15,7 @@ import time
 
 assignment = {0: 'L', 1: 'N', 2: 'V', 3: 'NP', 4: 'UL'}
 
-trees = tree_generator.read_from_file("trees_V_NP.txt")
+trees = tree_generator.read_from_file("treebanks/trees_V_NP.txt")
 
 new_pfstas = []
 highest = -20000000

@@ -22,17 +22,20 @@ import tree_generator
 
 pfsta1 = PFSTA([1, 2, 3],
                {1: 1.0},
-               {(1, '*', (2, 3)): 0.2,
-                (1, '*', (2, 2)): 0.3,
+               {(1, '*', (2, 3)): 0.5,
+                (1, '*', (2, 2)): 0.5,
                 (2, '*', (3, 3)): 0.2,
-                (2, 'a', ()): 0.1,
-                (3, 'b', ()): 0.1})
+                (2, 'a', ()): 0.8,
+                (3, 'b', ()): 1.0})
 bank = tree_generator.generate_bank_from_pfsta(pfsta1, 5)
 for t in bank:
     t.set_address('')
     over_under.assign_addresses(t)
     over_under.print_tree(t)
     print("--")
+
+p = over_under.initialize_from_pfsta(pfsta1)
+p.clean_print()
 
 # debug_pfsta = PFSTA([0, 1],
 #                     {0: 0.33, 1: 0.67},
@@ -58,7 +61,7 @@ for t in bank:
 #     print("--")
 
 
-trees = tree_generator.read_from_file("trees.txt")
+# trees = tree_generator.read_from_file("trees.txt")
 
 # new_pfstas = []
 # highest = 0

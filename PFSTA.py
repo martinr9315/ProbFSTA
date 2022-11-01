@@ -21,6 +21,9 @@ class PFSTA:
 
     def possible_transitions(self, state):
         return {t: self.transition_prob(t) for t in self.delta if t[0] == state}
+    
+    def get_terminals(self):
+        return [t[1] for t in self.delta if len(t[2]) == 0]
 
     def get_under(self, node, state):
         return self.unders.get((node, state))
@@ -93,7 +96,7 @@ class Node:
             print("Node "+self.label, end=' ')
 
     def print_address(self):
-        print(self.address+":", self.label, self.state)
+        print(self.address+":"+self.label)
 
 
 class TreeContext:

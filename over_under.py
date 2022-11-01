@@ -1,4 +1,4 @@
-from PFSTA import Node, TreeContext
+from PFSTA import Node, TreeContext, PFSTA
 import itertools
 import random
 
@@ -14,13 +14,39 @@ ASSIGN_STATES = True   # assignments are hard coded for now - 0:A, 1:B, 2:C
 RESOLVED_DEPENDENCY = False  # initial state is C (2) state for all trees
 
 
+def initialize_from_pfsta(original, no_order=True, assigned_states=False, resolved_dependency=False):
+    new_pfsta = PFSTA(q=original.q)
+    terminals = original.get_terminals()
+    if no_order:
+        state_seq = possible_lists_no_order(new_pfsta.q, 2)
+    else:
+        state_seq = possible_lists(new_pfsta.q, 2)
+    print("Seed:", random.seed())
+    initial_random = random.sample(range(0, 100), len(new_pfsta.q))
+    initial_sum = sum(initial_random)
+    initial_probabilites = [(r/initial_sum) for r in initial_random]
+    for i, q in enumerate(new_pfsta.q):
+        new_pfsta.i[q] = initial_probabilites[i]  # initial probabilities
+        delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
+        delta_sum = sum(delta_random)
+        delta_probabilites = [(r/delta_sum) for r in delta_random]
+        j = 0
+        for st in state_seq:  # transition probabilities
+            new_pfsta.delta[(q, '*', st)] = delta_probabilites[j]
+            j += 1
+        for t in terminals:  # terminal probabilities
+            new_pfsta.delta[(q, t, ())] = delta_probabilites[j]
+            j += 1
+    return new_pfsta
+
+
 def initialize_random(pfsta, n, terminals):
     pfsta.q = list(range(n+1))
     if NO_ORDER:
         state_seq = possible_lists_no_order(pfsta.q, 2)
     else:
         state_seq = possible_lists(pfsta.q, 2)
-    random.seed()
+    print("Seed:", random.seed())
     initial_random = random.sample(range(0, 100), len(pfsta.q))
     initial_sum = sum(initial_random)
     initial_probabilites = [(r/initial_sum) for r in initial_random]

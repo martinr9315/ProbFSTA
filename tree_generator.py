@@ -154,16 +154,15 @@ def generate_bank_from_pfsta(pfsta, n):
     bank = []
     for _ in range(n):
         root = Node(state=random.choice(list(pfsta.i.keys())))
-        bank.append(generate_tree_from_pfsta(pfsta, root, 3))
+        bank.append(generate_tree_from_pfsta(pfsta, root))
     return bank
 
 
-def generate_tree_from_pfsta(pfsta, node, depth):
-    if depth:
-        produce_transition(pfsta, node)
-        for c in node.children:
-            generate_tree_from_pfsta(pfsta, c, depth-1)
-        return node
+def generate_tree_from_pfsta(pfsta, node):
+    produce_transition(pfsta, node)
+    for c in node.children:
+        generate_tree_from_pfsta(pfsta, c)
+    return node
 
 
 def produce_transition(pfsta, node):
