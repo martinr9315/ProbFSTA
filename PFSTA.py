@@ -20,7 +20,7 @@ class PFSTA:
         return self.delta.get(transition, 0.0)
 
     def possible_transitions(self, state):
-        return [t for t in self.delta if t[0] == state]
+        return {t: self.transition_prob(t) for t in self.delta if t[0] == state}
 
     def get_under(self, node, state):
         return self.unders.get((node, state))
@@ -84,6 +84,9 @@ class Node:
             self.context.over_no_order = {}
 
     def print(self):
+        print("Node "+self.label, end=' ')
+
+    def annotated_print(self):
         if self.state is not None:
             print("Node "+self.label, self.state, end=' ')
         else:

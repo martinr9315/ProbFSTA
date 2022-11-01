@@ -286,4 +286,6 @@ def likelihood_no_order(pfsta, trees):
         p = tree_prob_via_under_no_order(pfsta, t)
         if p != 0:
             product += math.log(p)
+        else: 
+            product += INF
     return product

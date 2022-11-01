@@ -160,6 +160,7 @@ def generate_bank_from_pfsta(pfsta, n):
 
 def generate_tree_from_pfsta(pfsta, node, depth):
     if depth:
+        produce_transition(pfsta, node)
         for c in node.children:
             generate_tree_from_pfsta(pfsta, c, depth-1)
         return node
@@ -167,13 +168,12 @@ def generate_tree_from_pfsta(pfsta, node, depth):
 
 def produce_transition(pfsta, node):
     possible_transitions = pfsta.possible_transitions(node.state)
-    weights = [v for k, v in possible_transitions.items()]
-    transition = random.choices(possible_transitions, weights=weights)
+    probs = [v for k, v in possible_transitions.items()]
+    transition = random.choices(list(possible_transitions.keys()), weights=probs, k=1)[0]
     children = []
     node.label = transition[1]
-    if node.label == "*":
-        for c in transition[2]:
-            children.append(Node(state=c))
+    for c in transition[2]:
+        children.append(Node(state=c))
     node.children = children
 
 
