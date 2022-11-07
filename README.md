@@ -1,8 +1,8 @@
-### Ling 198A: Modelling Learning of Long Distance Dependencies Using Expectation Maximization
+### Ling 198A: Modelling Learning of Long Distance Dependencies Using PFSTA Expectation Maximization
 
 #### Tree Bank Generation
 
-A tree bank can be generated from a 'goal PFSTA,' the PFSTA which we want the learner to learn.
+A tree bank can be generated from a *goal Probalistic Finite State Tree Automata,* the PFSTA which we want the learner to learn.
 Currently, the goal PFSTA is set to be: 
 ```
     Q: [0, 1, 2, 3, 4]
