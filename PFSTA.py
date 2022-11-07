@@ -19,6 +19,12 @@ class PFSTA:
     def transition_prob(self, transition):
         return self.delta.get(transition, 0.0)
 
+    def possible_transitions(self, state):
+        return {t: self.transition_prob(t) for t in self.delta if t[0] == state}
+
+    def get_terminals(self):
+        return [t[1] for t in self.delta if len(t[2]) == 0]
+
     def get_under(self, node, state):
         return self.unders.get((node, state))
 
@@ -51,16 +57,17 @@ class PFSTA:
                           assignment.get(t[2][1], '*'))
                 else:
                     print(assignment.get(t[0], '*'),
-                          "->", t[1])
+                          "->", t[1])                
     # ------------------------------------
 
 
 class Node:
-    def __init__(self, label="*"):
+    def __init__(self, state=None, label="*"):
         self.children = []
         self.address = None
         self.label = label
         self.context = None
+        self.state = state  # only for use in annotated trees
 
     def set_address(self, address):
         self.address = address
@@ -75,12 +82,17 @@ class Node:
         self.under = {}
         self.under_no_order = {}
         if self.context:
-            print('clear over')
             self.context.over = {}
             self.context.over_no_order = {}
 
     def print(self):
         print("Node "+self.label, end=' ')
+
+    def annotated_print(self):
+        if self.state is not None:
+            print("Node "+self.label, self.state, end=' ')
+        else:
+            print("Node "+self.label, end=' ')
 
     def print_address(self):
         print(self.address+":"+self.label)
