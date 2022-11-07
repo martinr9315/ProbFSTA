@@ -4,7 +4,7 @@ from over_under import (get_address_list, get_context, get_node,
                         tree_prob_via_under, order, clear_memos)
 from PFSTA import PFSTA
 import math
-
+import numpy as np
 
 class HiddenEvent:
     state = None
@@ -287,6 +287,7 @@ def likelihood_no_order(pfsta, trees):
         # product *= prob
         if prob != 0:
             product += math.log(prob)
-        # if prob == 0:
-        #     product += float('-inf')
+        if prob == 0:
+            product += math.log(np.nextafter(0, 1)) # log(4.9406564584124654e-324) = -744.4400719213812
+            # product += float('-inf')
     return product

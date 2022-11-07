@@ -1,7 +1,6 @@
 from PFSTA import Node
 import random
 import over_under
-import copy
 
 N_ARY = 2  # max children generated node can have
 C_COMMAND = True  # enforce A c-commands B (only one A/B)
@@ -109,11 +108,20 @@ def generate_bank(alphabet, depth, n):
     return bank
 
 
-def generate_bank_from_pfsta(pfsta, n):
+def generate_bank_from_pfsta(pfsta, n, max_depth=None):
     bank = []
-    for _ in range(n):
+    for i in range(n):
         root = Node(state=random.choice(list(pfsta.i.keys())))
-        bank.append(generate_tree_from_pfsta(pfsta, root))
+        t = generate_tree_from_pfsta(pfsta, root)
+        t.set_address('')
+        over_under.assign_addresses(t)
+        d = over_under.depth(t)
+        while max_depth and d and len(d) > max_depth:
+            t = generate_tree_from_pfsta(pfsta, root)
+            t.set_address('')
+            over_under.assign_addresses(t)
+            d = over_under.depth(t)
+        bank.append(t)
     return bank
 
 

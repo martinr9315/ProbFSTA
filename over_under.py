@@ -145,11 +145,16 @@ def traverse(node, address_list):
         traverse(n, address_list)
 
 
-def print_tree(node):
+def depth(node):
+    addresses = get_address_list(node)
+    return max(addresses, key=len)
+
+
+def print_tree(node, f=None):
     if node:
-        node.print_address()
+        node.print_address(f)
         for n in node.children:
-            print_tree(n)
+            print_tree(n, f)
 
 
 def clear_memos(trees):
