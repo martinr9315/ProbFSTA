@@ -15,7 +15,9 @@ def initialize_random(pfsta, n, terminals):
         state_seq = possible_lists_no_order(pfsta.q, 2)
     else:
         state_seq = possible_lists(pfsta.q, 2)
-    random.seed()
+    seed = random.randint(1, 100)
+    print("Seed:", seed)
+    random.seed(seed)
     initial_random = random.sample(range(0, 100), len(pfsta.q))
     initial_sum = sum(initial_random)
     initial_probabilites = [(r/initial_sum) for r in initial_random]
