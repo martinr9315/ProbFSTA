@@ -23,4 +23,4 @@ To generate a tree bank, run: ```python3 generate_trees.py``` and follow the pro
 #### Random Starting PFSTA
 The EM algorithm requires a random PFSTA from which to begin iteration. Currently, the random starting PFSTA (and subsequent EM algorithm) default to being **unorded**, having **assigned terminal states** (i.e., the 0 state always corresponds to the 'Wh' terminal), and an **assigned initial state** (equivalent to a resolved dependency since state 1, the neutral state, is the assigned initial state). 
 
-As of now, these are modifiable via the global variabls in ```over_under.py```.
+As of now, these are modifiable via the global variables in ```over_under.py```.
