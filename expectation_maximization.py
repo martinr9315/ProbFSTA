@@ -281,9 +281,12 @@ def likelihood(pfsta, trees):
 
 
 def likelihood_no_order(pfsta, trees):
-    product = 1
+    product = 0
     for t in trees:
         prob = tree_prob_via_under_no_order(pfsta, t)
+        # product *= prob
         if prob != 0:
             product += math.log(prob)
+        # if prob == 0:
+        #     product += float('-inf')
     return product
