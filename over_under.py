@@ -31,10 +31,13 @@ def initialize_random(pfsta, n, terminals):
         else:
             pfsta.i[q] = initial_probabilites[i]  # initial probabilities
         if q == 4:
+            random.seed(seed)
             delta_random = random.sample(range(0, 100), len(state_seq))
         elif ASSIGN_STATES:
+            random.seed(seed)
             delta_random = random.sample(range(0, 100), len(state_seq)+1)
         else:
+            random.seed(seed)
             delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
         delta_sum = sum(delta_random)
         delta_probabilites = [(r/delta_sum) for r in delta_random]
