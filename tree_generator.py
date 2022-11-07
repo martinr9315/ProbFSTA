@@ -109,6 +109,33 @@ def generate_bank(alphabet, depth, n):
     return bank
 
 
+def generate_bank_from_pfsta(pfsta, n):
+    bank = []
+    for _ in range(n):
+        root = Node(state=random.choice(list(pfsta.i.keys())))
+        bank.append(generate_tree_from_pfsta(pfsta, root))
+    return bank
+
+
+def generate_tree_from_pfsta(pfsta, node):
+    produce_transition(pfsta, node)
+    for c in node.children:
+        generate_tree_from_pfsta(pfsta, c)
+    return node
+
+
+def produce_transition(pfsta, node):
+    possible_transitions = pfsta.possible_transitions(node.state)
+    probs = [v for k, v in possible_transitions.items()]
+    transition = random.choices(list(possible_transitions.keys()), weights=probs, k=1)[0]
+    children = []
+    node.label = transition[1]
+    for c in transition[2]:
+        children.append(Node(state=c))
+    node.children = children
+
+
+
  #------------Changing geometry------------
 def gap_rotation(bank):
     tree = copy.deepcopy(bank)
