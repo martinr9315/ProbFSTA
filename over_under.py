@@ -148,6 +148,14 @@ def traverse(node, address_list):
         traverse(n, address_list)
 
 
+def count(node):
+    if node:
+        sum = 0
+        for child in node.children:
+            sum += count(child)
+        return 1 + sum
+
+
 def depth(node):
     addresses = get_address_list(node)
     return max(addresses, key=len)
@@ -340,6 +348,7 @@ def prob_over(pfsta, context, state):
 
 
 def prob_under_no_order(pfsta, node, state):
+    # print("Count:", count(node), "Address:", node.get_address(), "State:", state)
     if pfsta.get_under(node, state):
         return pfsta.get_under(node, state)
     else:
@@ -377,17 +386,19 @@ def prob_under_no_order(pfsta, node, state):
 
 
 def prob_over_no_order(pfsta, context, state):
+    print('starting prob over')
     if pfsta.get_over(context, state):
         return pfsta.get_over(context, state)
     else:
         if context.is_root():
+            print('returning initial prob')
             return pfsta.start_prob(state)
         else:
             mother_label = context.mother.label
             kl = len(context.left_sisters)
             kr = len(context.right_sisters)
             poss_list_sisters = possible_lists_no_order(pfsta.q, kl+kr)
-            zipped = list(zip_two(poss_list_sisters, pfsta.q))
+            # zipped = list(zip_two(poss_list_sisters, pfsta.q))
             sum = 0
             for mom_state in pfsta.q:
                 sum_here = 0
@@ -422,6 +433,13 @@ def tree_prob_via_under_no_order(pfsta, node):
     sum = 0
     for state in pfsta.q:
         sum += pfsta.start_prob(state)*prob_under_no_order(pfsta, node, state)
+    return sum
+
+
+def tree_prob_via_over_no_order(pfsta, node):
+    sum = 0
+    for state in pfsta.q:
+        sum += pfsta.start_prob(state)*prob_over_no_order(pfsta, get_context(node, ""), state)
     return sum
 
 

@@ -74,6 +74,9 @@ class Node:
     def set_address(self, address):
         self.address = address
 
+    def get_address(self):
+        return self.address
+
     def set_label(self, label):
         self.label = label
 
@@ -99,7 +102,11 @@ class Node:
     def print_address(self, f=None):
         if f is not None:
             print(self.address+":"+self.label, file=f)
-        print(self.address+":"+self.label)
+        # print(self.address+":"+self.label)
+        return (self.address+":"+self.label)
+
+
+
 
 
 class TreeContext:

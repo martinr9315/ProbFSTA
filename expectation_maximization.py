@@ -235,6 +235,7 @@ def estimate_from_counts(states, soft_counts):
 
 def update(pfsta, trees):
     expected_counts = expectations_from_corpus(pfsta, trees)
+    print("finished e step")
     new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
     pfsta.overs.clear()
     pfsta.unders.clear()
