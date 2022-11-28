@@ -8,6 +8,7 @@ class PFSTA:
         self.delta = delta  # delta = {transition: prob}
         self.overs = {}
         self.unders = {}
+        self.order_transitions()
 
     # ------ Grammar utilities ---------
     def all_states(self):
@@ -18,6 +19,16 @@ class PFSTA:
 
     def transition_prob(self, transition):
         return self.delta.get(transition, 0.0)
+
+    def order_transitions(self):
+        ordered_delta = {}
+        for t, v in self.delta.items():
+            if len(t[2]) > 0:
+                sorted_children = tuple(sorted(t[2]))
+                sorted_transition = (t[0], t[1], sorted_children)
+                t = sorted_transition
+            ordered_delta.update({t: v})
+        self.delta = ordered_delta
 
 ############
     def possible_transitions(self, state):
@@ -102,11 +113,8 @@ class Node:
     def print_address(self, f=None):
         if f is not None:
             print(self.address+":"+self.label, file=f)
-        # print(self.address+":"+self.label)
-        return (self.address+":"+self.label)
-
-
-
+        print(self.address+":"+self.label)
+        # return (self.address+":"+self.label)
 
 
 class TreeContext:
