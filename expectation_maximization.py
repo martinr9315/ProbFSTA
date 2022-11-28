@@ -1,10 +1,12 @@
 from over_under import (get_address_list, get_context, get_node,
-                        possible_lists, possible_lists_no_order, prob_over, prob_under,tree_prob_via_under_no_order,
+                        possible_lists, possible_lists_no_order, prob_over,
+                        prob_under, tree_prob_via_under_no_order,
                         prob_under_no_order, prob_over_no_order,
-                        tree_prob_via_under, order, clear_memos)
+                        tree_prob_via_under, order)
 from PFSTA import PFSTA
 import math
 import numpy as np
+
 
 class HiddenEvent:
     state = None
@@ -142,7 +144,6 @@ def expectations_from_observation_no_order(pfsta, observed_events):
         soft_start_counts.hidden_events[h_event] = (pfsta.start_prob(state) * prob_under_no_order(pfsta, observed_events.start_event, state))
     normalize(soft_start_counts.hidden_events)
     total_soft_counts.append(soft_start_counts)
-
     # for transitions:
     for t_event in observed_events.transition_events:
         t_soft_count = SoftCounts()
@@ -235,7 +236,6 @@ def estimate_from_counts(states, soft_counts):
 
 def update(pfsta, trees):
     expected_counts = expectations_from_corpus(pfsta, trees)
-    print("finished e step")
     new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
     pfsta.overs.clear()
     pfsta.unders.clear()
@@ -251,7 +251,9 @@ def update_n(pfsta, trees, n):
 
 def update_no_order(pfsta, trees):
     expected_counts = expectations_from_corpus_no_order(pfsta, trees)
+    # print("  finished E step")
     new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
+    # print("  finished M step")
     return new_pfsta
 
 
@@ -267,10 +269,10 @@ def update_no_order_until(pfsta, trees, e):
     old_likelihood = 0
     new_likelihood = likelihood_no_order(pfsta, trees)
     while abs(old_likelihood-new_likelihood) > e:
-        m = update_no_order_n(m, trees, 5)
+        m = update_no_order(m, trees)
         old_likelihood = new_likelihood
         new_likelihood = likelihood_no_order(m, trees)
-        print(new_likelihood)
+        print('\tlikelihood:', new_likelihood)
     return m
 
 
@@ -285,10 +287,8 @@ def likelihood_no_order(pfsta, trees):
     product = 0
     for t in trees:
         prob = tree_prob_via_under_no_order(pfsta, t)
-        # product *= prob
         if prob != 0:
             product += math.log(prob)
         if prob == 0:
-            product += math.log(np.nextafter(0, 1)) # log(4.9406564584124654e-324) = -744.4400719213812
-            # product += float('-inf')
+            product += float('-inf')
     return product
