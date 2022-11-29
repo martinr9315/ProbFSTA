@@ -20,16 +20,19 @@ goal_pfsta = PFSTA( [0, 1, 2, 3, 4],
                     (4, '*', (1, 2)): 0.6818,
                     (4, '*', (1, 4)): 0.3182})
 
-bank = tree_generator.read_from_file("treebanks/50_free_depth.txt")
 
+input_file = input("Which treebank would you like to use? ")
+if '.txt' in input_file:
+    input_file = input("Input filename w/o ext: ")
+bank = tree_generator.read_from_file("treebanks/"+input_file+".txt")
 
 new_pfstas = []
-highest = -20000000
+highest = -2000000000
 index = 0
 random_initialization_times = []
 update_n_times = []
 likelihood_times = []
-for i in range(15):
+for i in range(25):
     print('#', i+1)
     p = PFSTA()
     over_under.initialize_random(p, 4, ['Wh', 'V', 'C', 'NP'])
@@ -49,8 +52,10 @@ for i in range(15):
     print('------')
 
 best = new_pfstas[index]
-print("Best:", likelihood_no_order(best, bank))
+print("\nUsing bank "+input_file+"...")
+print("Best likelihood:", likelihood_no_order(best, bank))
 best.clean_print()
+print("CFG form:")
 best.pretty_print(assignment)
 
-print("update until .01 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")
+print("\nUpdate until .01 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")

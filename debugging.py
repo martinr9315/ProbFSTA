@@ -26,7 +26,7 @@ goal_pfsta = PFSTA( [0, 1, 2, 3, 4],
 # ---------------------------------------------------------------------------------
 
 # # depth 4 tree with V licensed by Wh at bottom level
-problem_tree = tree_generator.read_from_file("treebanks/problem_tree.txt")
+problem_tree = tree_generator.read_from_file("treebanks/debugging/problem_tree.txt")
 # over_under.print_tree(problem_tree[0])
 
 # # ordered update on problem tree - succeeds
@@ -40,7 +40,7 @@ problem_tree = tree_generator.read_from_file("treebanks/problem_tree.txt")
 
 
 def test_update(tree_file):
-    tree = tree_generator.read_from_file("treebanks/"+tree_file)
+    tree = tree_generator.read_from_file("treebanks/debugging/"+tree_file)
     print(tree_file + " unordered update...")
     # over_under.print_tree(tree[0])
     update_no_order_until(goal_pfsta, tree, .5)

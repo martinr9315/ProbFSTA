@@ -8,7 +8,7 @@ class PFSTA:
         self.delta = delta  # delta = {transition: prob}
         self.overs = {}
         self.unders = {}
-        self.order_transitions()
+        self.order_transitions()  # only for unordered PFSTAs
 
     # ------ Grammar utilities ---------
     def all_states(self):
