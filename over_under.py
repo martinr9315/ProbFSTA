@@ -6,7 +6,7 @@ import random
 
 NO_ORDER = True
 ASSIGN_STATES = True   # assignments are hard coded for now
-RESOLVED_DEPENDENCY = True  # initial state is 1 (neutral state)
+RESOLVED_DEPENDENCY = False  # initial state is 1 (neutral state)
 
 
 def initialize_random(pfsta, n, terminals):
@@ -15,36 +15,37 @@ def initialize_random(pfsta, n, terminals):
         state_seq = possible_lists_no_order(pfsta.q, 2)
     else:
         state_seq = possible_lists(pfsta.q, 2)
-    seeds = random.sample(range(0, 100), len(pfsta.q))
-    # Avoid certain seeds
-    avoid_seed = 30
-    while avoid_seed in seeds:
-        seeds = random.sample(range(0, 100), len(pfsta.q))
-    # Force set seed
-    # seed = 16
+    seeds = random.sample(range(1, 100), len(pfsta.q))
     print("Seeds:", seeds)
-    random.seed(seeds[0])
-    initial_random = random.sample(range(0, 100), len(pfsta.q))
-    initial_sum = sum(initial_random)
-    initial_probabilites = [(r/initial_sum) for r in initial_random]
     for i, q in enumerate(pfsta.q):
         if RESOLVED_DEPENDENCY:
-            pfsta.i[0] = 0
-            pfsta.i[1] = 1
-            pfsta.i[2] = 0
-            pfsta.i[3] = 0
+            # ONLY NOT UL STATE CAN BE INITIAL RN
+            # pfsta.i[0] = 0
+            # pfsta.i[1] = 1
+            # pfsta.i[2] = 0
+            # pfsta.i[3] = 0
+            random.seed(seeds[0])
+            initial_random = random.sample(range(1, 100), len(pfsta.q)-1)
+            initial_sum = sum(initial_random)
+            initial_probabilites = [(r/initial_sum) for r in initial_random]
+            if q<4:
+                pfsta.i[q] = initial_probabilites[i]  # initial probabilities
             pfsta.i[4] = 0
         else:
+            random.seed(seeds[0])
+            initial_random = random.sample(range(1, 100), len(pfsta.q))
+            initial_sum = sum(initial_random)
+            initial_probabilites = [(r/initial_sum) for r in initial_random]
             pfsta.i[q] = initial_probabilites[i]  # initial probabilities
         if q == 4:
             random.seed(seeds[q])
-            delta_random = random.sample(range(0, 100), len(state_seq))
+            delta_random = random.sample(range(1, 100), len(state_seq))
         elif ASSIGN_STATES:
             random.seed(seeds[q])
-            delta_random = random.sample(range(0, 100), len(state_seq)+1)
+            delta_random = random.sample(range(1, 100), len(state_seq)+1)
         else:
             random.seed(seeds[q])
-            delta_random = random.sample(range(0, 100), len(state_seq)+len(terminals))
+            delta_random = random.sample(range(1, 100), len(state_seq)+len(terminals))
         delta_sum = sum(delta_random)
         delta_probabilites = [(r/delta_sum) for r in delta_random]
         j = 0

@@ -26,6 +26,18 @@ goal_pfsta_2 = PFSTA(   [0, 1, 2, 3, 4],
                          (4, '*', (1, 2)): 0.7222,
                          (4, '*', (1, 4)): 0.2778})
 
+goal_pfsta_3 = PFSTA(   [0, 1, 2, 3, 4],
+                        {1: 1.0},
+                        {(0, 'Wh', ()): 1.0,
+                         (1, '*', (0, 4)): 0.097,
+                         (1, '*', (1, 1)): 0.2239,
+                         (1, '*', (2, 3)): 0.2612,
+                         (1, 'C', ()): 0.4179,
+                         (2, 'V', ()): 1.0,
+                         (3, 'NP', ()): 1.0,
+                         (4, '*', (2)): 0.7222,    # unary branching for unlicensed V
+                         (4, '*', (1, 4)): 0.2778})
+
 num_trees = int(input("How many trees would you like to generate?  "))
 enforce_depth = input("Would you like to enforce a maximum depth? (y/n) ")
 enforce_depth = True if enforce_depth == 'y' else False

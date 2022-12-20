@@ -134,7 +134,7 @@ def to_string(e):
 ROOT = "ROOT"
 
 # Reads PTB trees from a file, and returns a list of trees
-def get_trees(f):
+def get_trees(f): ## CALL THIS FUNCTION ON FILE OF TREES
 
     trees = []
     errors = 0

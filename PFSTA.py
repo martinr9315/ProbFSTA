@@ -51,11 +51,12 @@ class PFSTA:
 
     def clean_print(self):
         print('Q:', self.q)
-        print('I:', self.i)
+        cleaned_i = {t: k for t, k in self.i.items() if k > .00001}
+        print('I:', cleaned_i)
         print('Delta:')
         for t, k in self.delta.items():
             if k > .00001:
-                print(str(t)+':'+str(round(k, 4)))
+                print(str(t)+': '+str(round(k, 4)))
 
     def pretty_print(self, assignment):
         for i, k in self.i.items():
