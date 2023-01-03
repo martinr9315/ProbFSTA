@@ -64,7 +64,11 @@ class PFSTA:
                 print('I:', assignment.get(i, '*'))
         for t, k in self.delta.items():
             if k > .00001:
-                if len(t[2]) > 0:
+                if len(t[2]) == 1:
+                    print(assignment.get(t[0], '*'),
+                          "->",
+                          assignment.get(t[2][0], '*'))
+                elif len(t[2]) == 2:
                     print(assignment.get(t[0], '*'),
                           "->",
                           assignment.get(t[2][0], '*'),

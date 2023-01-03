@@ -23,10 +23,22 @@ goal_pfsta = PFSTA( [0, 1, 2, 3, 4],
                     (4, '*', (2, 1)): 0.6818,
                     (4, '*', (4, 1)): 0.3182})
 
+goal_pfsta_3 = PFSTA(   [0, 1, 2, 3, 4],
+                        {1: 1.0},
+                        {(0, 'Wh', ()): 1.0,
+                         (1, '*', (0, 4)): 0.097,
+                         (1, '*', (1, 1)): 0.2239,
+                         (1, '*', (2, 3)): 0.2612,
+                         (1, 'C', ()): 0.4179,
+                         (2, 'V', ()): 1.0,
+                         (3, 'NP', ()): 1.0,
+                         (4, '*', (2,)): 0.7222,    # unary branching for unlicensed V
+                         (4, '*', (1, 4)): 0.2778})
+
 # ---------------------------------------------------------------------------------
 
 # # depth 4 tree with V licensed by Wh at bottom level
-problem_tree = tree_generator.read_from_file("treebanks/debugging/problem_tree.txt")
+# sproblem_tree = tree_generator.read_from_file("treebanks/debugging/problem_tree.txt")
 # over_under.print_tree(problem_tree[0])
 
 # # ordered update on problem tree - succeeds
@@ -66,8 +78,8 @@ def print_all_overs(tree, non_zero):
 
 
 # matching over and under probs!
-bank = tree_generator.read_from_file("treebanks/50_free_depth.txt")
-for t in bank:
-    print('----')
-    print(over_under.tree_prob_via_over_no_order(goal_pfsta, t))
-    print(over_under.tree_prob_via_under_no_order(goal_pfsta, t))
+bank = tree_generator.read_from_file("treebanks/debugging/new_prob_tree.txt")
+for i, t in enumerate(bank):
+    print('---', i+1)
+    print(over_under.tree_prob_via_over_no_order(goal_pfsta_3, t))
+    print(over_under.tree_prob_via_under_no_order(goal_pfsta_3, t))

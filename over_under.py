@@ -6,13 +6,14 @@ import random
 
 NO_ORDER = True
 ASSIGN_STATES = True   # assignments are hard coded for now
-RESOLVED_DEPENDENCY = False  # initial state is 1 (neutral state)
+RESOLVED_DEPENDENCY = True  # initial state is 1 (neutral state)
 
 
 def initialize_random(pfsta, n, terminals):
     pfsta.q = list(range(n+1))
     if NO_ORDER:
         state_seq = possible_lists_no_order(pfsta.q, 2)
+        state_seq.update(possible_lists_no_order(pfsta.q, 1))
     else:
         state_seq = possible_lists(pfsta.q, 2)
     seeds = random.sample(range(1, 100), len(pfsta.q))
@@ -20,16 +21,16 @@ def initialize_random(pfsta, n, terminals):
     for i, q in enumerate(pfsta.q):
         if RESOLVED_DEPENDENCY:
             # ONLY NOT UL STATE CAN BE INITIAL RN
-            # pfsta.i[0] = 0
-            # pfsta.i[1] = 1
-            # pfsta.i[2] = 0
-            # pfsta.i[3] = 0
-            random.seed(seeds[0])
-            initial_random = random.sample(range(1, 100), len(pfsta.q)-1)
-            initial_sum = sum(initial_random)
-            initial_probabilites = [(r/initial_sum) for r in initial_random]
-            if q<4:
-                pfsta.i[q] = initial_probabilites[i]  # initial probabilities
+            pfsta.i[0] = 0
+            pfsta.i[1] = 1
+            pfsta.i[2] = 0
+            pfsta.i[3] = 0
+            # random.seed(seeds[0])
+            # initial_random = random.sample(range(1, 100), len(pfsta.q)-1)
+            # initial_sum = sum(initial_random)
+            # initial_probabilites = [(r/initial_sum) for r in initial_random]
+            # if q<4:
+            #     pfsta.i[q] = initial_probabilites[i]  # initial probabilities
             pfsta.i[4] = 0
         else:
             random.seed(seeds[0])

@@ -35,7 +35,7 @@ goal_pfsta_3 = PFSTA(   [0, 1, 2, 3, 4],
                          (1, 'C', ()): 0.4179,
                          (2, 'V', ()): 1.0,
                          (3, 'NP', ()): 1.0,
-                         (4, '*', (2)): 0.7222,    # unary branching for unlicensed V
+                         (4, '*', (2,)): 0.7222,    # unary branching for unlicensed V
                          (4, '*', (1, 4)): 0.2778})
 
 num_trees = int(input("How many trees would you like to generate?  "))
@@ -53,7 +53,7 @@ if write_to_file:
     f = open('treebanks/'+filename, "x")
 
 print("\nGenerating", num_trees, "trees...\n")
-bank = tree_generator.generate_bank_from_pfsta(goal_pfsta_2, num_trees, max_depth)
+bank = tree_generator.generate_bank_from_pfsta(goal_pfsta_3, num_trees, max_depth)
 for t in bank:
     over_under.print_tree(t, f)
     print("--")
