@@ -100,7 +100,7 @@ def get_node(root, address):  # getSubTree
     node = root
     for num in address:
         node = node.children[int(num)]
-    return (node)
+    return node
 
 
 def get_left_sis(root, address):  # getLeftSis
@@ -125,6 +125,16 @@ def get_right_sis(root, address):  # getRightSis
             if n and (n.address > address):
                 right_sisters.append(n)
         return right_sisters
+
+def get_sisters(root, address):
+    if address == '':
+        return None
+    else:
+        mother = get_node(root, address[:-1])
+        sisters = []
+        for n in mother.children:
+            sisters.append(n.label)
+        return sisters
 
 
 def get_context(root, address):  # getCxt

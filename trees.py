@@ -144,7 +144,7 @@ def get_trees(f): ## CALL THIS FUNCTION ON FILE OF TREES
             trees.append(t)
         except:
             errors = errors + 1
-            print("WARNING: Ignoring ill-formed tree: %s" % re.sub("\s+", " ", c))
+            # print("WARNING: Ignoring ill-formed tree: %s" % re.sub("\s+", " ", c))
 
     if errors > 0:
         print("WARNING: Ignored %d ill-formed trees" % errors)

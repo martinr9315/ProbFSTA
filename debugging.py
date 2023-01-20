@@ -78,7 +78,7 @@ def print_all_overs(tree, non_zero):
 
 
 # matching over and under probs!
-bank = tree_generator.read_from_file("treebanks/debugging/new_prob_tree.txt")
+bank = tree_generator.read_from_file("treebanks/CHILDES_no_wh.txt")
 for i, t in enumerate(bank):
     print('---', i+1)
     print(over_under.tree_prob_via_over_no_order(goal_pfsta_3, t))

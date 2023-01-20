@@ -80,8 +80,8 @@ class PFSTA:
 
 
 class Node:
-    def __init__(self, label="*", state=None):
-        self.children = []
+    def __init__(self, label="*", state=None, children=[]):
+        self.children = children
         self.address = None
         self.label = label
         self.context = None
@@ -95,6 +95,9 @@ class Node:
 
     def set_label(self, label):
         self.label = label
+    
+    def get_label(self):
+        return self.label
 
     def star_label(self):
         self.label = '*'
