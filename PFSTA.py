@@ -63,7 +63,7 @@ class PFSTA:
 
 
 class Node:
-    def __init__(self, state=None, label="*"):
+    def __init__(self, label="*", state=None):
         self.children = []
         self.address = None
         self.label = label

@@ -21,7 +21,9 @@ def initialize_from_pfsta(original, no_order=True, assigned_states=False, resolv
         state_seq = possible_lists_no_order(new_pfsta.q, 2)
     else:
         state_seq = possible_lists(new_pfsta.q, 2)
-    print("Seed:", random.seed())
+    seed = random.randint(1, 100)
+    print("Seed:", seed)
+    random.seed(seed)
     initial_random = random.sample(range(0, 100), len(new_pfsta.q))
     initial_sum = sum(initial_random)
     initial_probabilites = [(r/initial_sum) for r in initial_random]
@@ -46,7 +48,9 @@ def initialize_random(pfsta, n, terminals):
         state_seq = possible_lists_no_order(pfsta.q, 2)
     else:
         state_seq = possible_lists(pfsta.q, 2)
-    print("Seed:", random.seed())
+    seed = random.randint(1, 100)
+    print("Seed:", seed)
+    random.seed(seed)
     initial_random = random.sample(range(0, 100), len(pfsta.q))
     initial_sum = sum(initial_random)
     initial_probabilites = [(r/initial_sum) for r in initial_random]
@@ -383,6 +387,7 @@ def prob_under_no_order(pfsta, node, state):
             state_seq = possible_lists_no_order(pfsta.q, k)  # orderless
             sum = 0
             for st in state_seq:
+                # TODO: clean up this look up so matches prob_over_no_order
                 if len(set(st)) > 1:  # if the states are not same
                     ordered_list = order(st, k)  # generate ordering 
                     trans_prob = 0
@@ -420,18 +425,12 @@ def prob_over_no_order(pfsta, context, state):
             kl = len(context.left_sisters)
             kr = len(context.right_sisters)
             poss_list_sisters = possible_lists_no_order(pfsta.q, kl+kr)
-            zipped = list(zip_two(poss_list_sisters, pfsta.q))
             sum = 0
             for mom_state in pfsta.q:
                 sum_here = 0
                 for sis_state_seq in poss_list_sisters:
-                    ordered_children = order(sis_state_seq+(state,), kl+kr+1)  # generate ordering 
-                    trans_prob = 0
-                    for children in ordered_children:
-                        if pfsta.transition_prob((mom_state, mother_label, (children))):
-                            trans_prob = pfsta.transition_prob((mom_state, mother_label, (children)))
-                            break
-                    product = trans_prob
+                    children = tuple(sorted(sis_state_seq+(state,)))
+                    product = pfsta.transition_prob((mom_state, mother_label, (children)))
                     if product:
                         product *= prob_over_no_order(pfsta, context.mother_context, mom_state)
                         for i, sis in enumerate(context.left_sisters + context.right_sisters):
@@ -458,12 +457,20 @@ def tree_prob_via_under_no_order(pfsta, node):
     return sum
 
 
+def tree_prob_via_over_no_order(pfsta, node):
+    addresses = sorted(get_address_list(node))
+    term = get_label(node, addresses[-1])
+    sum = 0
+    for state in pfsta.q:
+        sum += pfsta.transition_prob((state, term, ()))*prob_over_no_order(pfsta, get_context(node, addresses[-1]), state)
+    return sum
+
+
 def tree_prob_via_over(pfsta, node):
     sum = 0
     for state in pfsta.q:
         sum += pfsta.start_prob(state)*prob_over(pfsta, get_context(node, ""), state)
     return sum
-
 
 # ------------Interpretable values-------------
 

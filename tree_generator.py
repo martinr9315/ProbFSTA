@@ -16,7 +16,8 @@ NOT_SIBLINGS = 0  # enforce A-B are allowed to be siblings only x% of the time
 
 def read_from_file(file):
     f = open(file, "r")
-    str = (f.read()).split('--')
+    # str = (f.read()).split('--')
+    str = filter(lambda x: x != '\n', (f.read()).split('--'))
     trees = []
     for s in str:
         if s:
@@ -25,11 +26,15 @@ def read_from_file(file):
         over_under.assign_addresses(t)
     return trees
 
+def a_len(s):
+    return len(s.split(":")[0])
 
 def read_from_addresses(s):
     s = s.split()
-    s = sorted(s, key=len)
-    tree = Node()
+    # s = sorted(s, key=len)
+    # tree = Node()
+    s = sorted(s, key=lambda x: a_len(x))
+    tree = Node(s[0].split(':')[1])
     tree.set_address('')
     for a in s[1:]:
         over_under.assign_addresses(tree)
