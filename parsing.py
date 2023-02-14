@@ -9,7 +9,7 @@ VERB_LABELS = ['VB', 'VBD', 'VBG', 'VBN', 'VBP']
 
 p = PFSTA(  [0, 1, 2, 3, 4],
                 {1: 1.0},
-                {(0, 'Wh', ()): 1.0,
+                {(0, 'WH', ()): 1.0,
                     (1, '*', (0, 4)): 0.097,
                     (1, '*', (1, 1)): 0.2239,
                     (1, '*', (2, 3)): 0.2612,
@@ -102,7 +102,7 @@ def binarize(node):
         # make V and NP children of one new node if they have sisters other than each other
         updated_children = []
         for i, c in enumerate(node.children): 
-            if c.get_label() == 'NP':
+            if c.get_label() == 'NP' or c.get_label() == 'trace':
                 new_node = Node(children=[node.children[i-1], c])
                 updated_children.pop()
                 updated_children.append(new_node)
@@ -110,7 +110,10 @@ def binarize(node):
                 updated_children.append(c)
         left = updated_children[0]
         right = updated_children[1:]
-        return Node(label=node.label, children=[binarize(left), binarize(Node(children=right))])
+        if len(updated_children) > 2:
+            return Node(label=node.label, children=[binarize(left), binarize(Node(children=right))])
+        else:
+            return Node(label=node.label, children=[binarize(left), binarize(right[0])])
 
 
 def timeout_handler(signum, frame):
@@ -119,7 +122,7 @@ def timeout_handler(signum, frame):
 
 def test_binarize():
     tree1 = Node('*')
-    tree1.children = [Node('V'), Node('NP'), Node('C'), Node('V'), Node('NP')]
+    tree1.children = [Node('V'), Node('NP'), Node('C')]
     tree1.set_address('')
     assign_addresses(tree1)
     print_tree(tree1)
@@ -144,89 +147,89 @@ def test_collapse():
 
 
 def parse(n):
+    bank = []
+    f = open('CHILDESTreebank/brown-adam.parsed', "r")
+    trees = get_trees(f)
+    for i, t in enumerate(trees[:n]):
+        if 'FRAG' not in str(t) and 'WHNP' in str(t): 
+            tuple_tree = from_tuple(t)              # convert from tuple to tree
+            clean_labels(tuple_tree)                # rewrite V w/o NP sister as C, only WHs with traces
+            drop_punctuation(tuple_tree)            # drop punctuation
+            tree = collapse_unary(tuple_tree)       # collapse unary branches (w/ same label) and complex V,NP
+            star_nodes(tree)                        # star all inner nodes
+            tree = binarize(tree)                   # binarize tree
+            drop_traces(tree)                       # drop traces
+            tree.set_address('')                    # set addresses
+            assign_addresses(tree)
+            bank.append(tree)
+    return bank
+
+
+def test_parse(n):
     timeouts = []
     zeros = []
     f = open('CHILDESTreebank/brown-adam.parsed', "r")
     trees = get_trees(f)
-
+    print(len(trees))
     for i, t in enumerate(trees[:n]):
-        if 'FRAG' not in str(t): 
-            print(i, t)
-            print('-')
-            tuple_tree = from_tuple(t)              # convert from tuple to tree
-            print(raw(t))
-            # print('original tree')                # print original tree
-            # tuple_tree.set_address('')
-            # assign_addresses(tuple_tree)
-            # print_tree(tuple_tree)
-            # print('-')
+        # if 'FRAG' not in str(t): 
+        print(i, t)
+        print('-')
+        tuple_tree = from_tuple(t)              # convert from tuple to tree
+        print(raw(t))
+        # print('original tree')                # print original tree
+        # tuple_tree.set_address('')
+        # assign_addresses(tuple_tree)
+        # print_tree(tuple_tree)
+        # print('-')
 
-            clean_labels(tuple_tree)                # rewrite V w/o NP sister as C, only WHs with traces
-            drop_punctuation(tuple_tree)
+        clean_labels(tuple_tree)                # rewrite V w/o NP sister as C, only WHs with traces
+        drop_punctuation(tuple_tree)
 
-            tree = collapse_unary(tuple_tree)      # collapse unary branches (w/ same label) and complex V,NP
+        tree = collapse_unary(tuple_tree)      # collapse unary branches (w/ same label) and complex V,NP
+    
         
-            drop_traces(tree)
 
-            tree.set_address('')
-            assign_addresses(tree)
-            star_nodes(tree)                        # star all inner nodes
+        tree.set_address('')
+        assign_addresses(tree)
+        star_nodes(tree)                        # star all inner nodes
 
-            print('collapsed tree')
-            print_tree(tree)
-            print('-')
+        print('collapsed tree')
+        print_tree(tree)
+        print('-')
 
 
-            print('binarized tree')
-            tree = binarize(tree)                   # binarize tree
-            tree.set_address('')
-            assign_addresses(tree)
-            print_tree(tree)
-            print('-')
+        print('binarized tree')
+        tree = binarize(tree)                   # binarize tree
+        drop_traces(tree)
+        tree.set_address('')
+        assign_addresses(tree)
+        print_tree(tree)
+        print('-')
 
-            time_limit = 120                         # set the time limit in seconds
-            signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(time_limit)
-            try:
-                prob = tree_prob_via_over_no_order(p, tree)
-                # print(tree_prob_via_under_no_order(p, tree))
-            except TimeoutError as e:
-                print(e)
-                timeouts.append((i,t))
-                continue
-            else:
-                print('over prob:', prob)
-            finally:
-                signal.alarm(0)
+        time_limit = 60                         # set the time limit in seconds
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(time_limit)
+        try:
+            prob = tree_prob_via_over_no_order(p, tree)
+            # print(tree_prob_via_under_no_order(p, tree))
+        except TimeoutError as e:
+            print(e)
+            timeouts.append((i,t))
+            continue
+        else:
+            print('over prob:', prob)
+        finally:
+            signal.alarm(0)
 
-            # assert prob != 0                        # make sure all trees are possible with goal PFSTA
-            if prob == 0:
-                zeros.append((i))
-            print('--\n')
+        # assert prob != 0                        # make sure all trees are possible with goal PFSTA
+        if prob == 0:
+            zeros.append((i))
+        print('--\n')
 
     print('Timed out on: ', len(timeouts), '\n', timeouts)
     print('Zeros on: ', len(zeros), '\n', zeros)
 
-parse(20)
+# parse(1000)
 # test_binarize()
 # test_collapse()
-
-
-#                                 :*
-# 0:C                                                     1:*
-#                                             10:C                11:*
-#                                                         110:C          111:*
-#                                                                 1110:C          1111:*
-#                                                                         11110:C     11111:*
-#                                                                                 111110:WH   111111:*
-#                                                                                         1111110:C   1111111:*
-#                                                                                                     11111110:V
-
-
-
-
-#     :*
-# 0:WH        1:*
-#         10:C        11:*
-#                 110:C   111:*
-#                         1110:V
