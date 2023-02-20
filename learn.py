@@ -3,20 +3,30 @@ import over_under
 from expectation_maximization import (  likelihood_no_order,
                                         update_no_order_until,
                                         update_n)
-from parsing import parse, timeout_handler
+from parsing import parse, split_bank, depth_limit, timeout_handler
 import time, signal, random
 
 
-NUM_PFSTAS = 25     # number of randomly initialized PFSTAs
-NUM_TREES = 50      # number of trees to randomly sample from CHILDES
-TIME_LIMIT = 300    # set the time limit in seconds
-
+NUM_PFSTAS = 40             # number of randomly initialized PFSTAs
+NUM_TREES = 75              # number of trees to randomly sample from CHILDES
+TIME_LIMIT = 900            # set the time limit in seconds
+MAX_DEPTH = 5
 
 assignment = {0: 'L', 1: 'N', 2: 'V', 3: 'NP', 4: 'UL'}
 
 
+
+# try without c_only 
+# even parts wh_only, v_np_only, c_only
 bank = parse(20000)
-bank = random.sample(bank, NUM_TREES)
+split_bank = split_bank(bank)
+wh_bank = random.sample(depth_limit(split_bank['wh_only'], MAX_DEPTH), NUM_TREES)
+v_np_bank = random.sample(depth_limit(split_bank['v_np_only'], MAX_DEPTH), NUM_TREES)
+c_bank = random.sample(depth_limit(split_bank['c_only'], MAX_DEPTH), NUM_TREES)
+
+bank = wh_bank+v_np_bank
+# bank = random.sample(depth_limit(bank, MAX_DEPTH), NUM_TREES)
+
 
 for t in bank:
     over_under.print_tree(t)
@@ -32,7 +42,7 @@ for i in range(NUM_PFSTAS):
     print('#', i+1)
     p = PFSTA()
     over_under.initialize_random(p, 4, ['WH', 'V', 'C', 'NP'])
-    p.clean_print()
+    # p.clean_print()
     print('--')
     st = time.time()
 
@@ -60,9 +70,11 @@ for i in range(NUM_PFSTAS):
 
 
 best = new_pfstas[index]
-print("Best likelihood (from ", num_pfstas, "initializations, ", num_trees, "trees):", likelihood_no_order(best, bank))
+print(NUM_PFSTAS, "initializations,", NUM_TREES, "trees of WH only, V-NP only each, max depth", MAX_DEPTH )
+print("Best likelihood:", likelihood_no_order(best, bank))
+
 best.clean_print()
-print("CFG form:")
+print("\nCFG form:")
 best.pretty_print(assignment)
 print("\nTimed out on ", timeouts)
 # print("\nUpdate until .01 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")

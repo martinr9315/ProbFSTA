@@ -1,7 +1,8 @@
 from trees import get_trees
 from PFSTA import Node, PFSTA
 from over_under import (assign_addresses, print_tree, get_right_sis, get_left_sis, get_address_list, 
-                        get_node, star_nodes, tree_prob_via_over_no_order, tree_prob_via_under_no_order)
+                        get_node, star_nodes, tree_prob_via_over_no_order, tree_prob_via_under_no_order,
+                        get_terminals, depth)
 import signal, string
 
 
@@ -151,7 +152,7 @@ def parse(n):
     f = open('CHILDESTreebank/brown-adam.parsed', "r")
     trees = get_trees(f)
     for i, t in enumerate(trees[:n]):
-        if 'FRAG' not in str(t) and 'WHNP' in str(t): 
+        if i != 11812:
             tuple_tree = from_tuple(t)              # convert from tuple to tree
             clean_labels(tuple_tree)                # rewrite V w/o NP sister as C, only WHs with traces
             drop_punctuation(tuple_tree)            # drop punctuation
@@ -165,6 +166,32 @@ def parse(n):
     return bank
 
 
+def split_bank(bank):
+    both_only = []
+    wh_only = []
+    v_np_only = []
+    c_only = []
+    for t in bank:
+        if 'NP' in get_terminals(t) and 'WH' in get_terminals(t):
+            both_only.append(t)
+        elif 'WH' in get_terminals(t):
+            wh_only.append(t)
+        elif 'NP' in get_terminals(t):
+            v_np_only.append(t)
+        else:
+            c_only.append(t)
+    split_bank = {'both_only': both_only, 'wh_only': wh_only, 'v_np_only': v_np_only, 'c_only': c_only}
+    return split_bank
+
+
+def depth_limit(bank, n):
+    shallow_bank = []
+    for t in bank:
+        if len(depth(t)) < n:
+            shallow_bank.append(t)
+    return shallow_bank
+
+
 def test_parse(n):
     timeouts = []
     zeros = []
@@ -173,7 +200,7 @@ def test_parse(n):
     print(len(trees))
     for i, t in enumerate(trees[:n]):
         # if 'FRAG' not in str(t): 
-        print(i, t)
+
         print('-')
         tuple_tree = from_tuple(t)              # convert from tuple to tree
         print(raw(t))
@@ -187,8 +214,6 @@ def test_parse(n):
         drop_punctuation(tuple_tree)
 
         tree = collapse_unary(tuple_tree)      # collapse unary branches (w/ same label) and complex V,NP
-    
-        
 
         tree.set_address('')
         assign_addresses(tree)
@@ -229,7 +254,3 @@ def test_parse(n):
 
     print('Timed out on: ', len(timeouts), '\n', timeouts)
     print('Zeros on: ', len(zeros), '\n', zeros)
-
-# parse(1000)
-# test_binarize()
-# test_collapse()

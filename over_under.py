@@ -20,18 +20,10 @@ def initialize_random(pfsta, n, terminals):
     print("Seeds:", seeds)
     for i, q in enumerate(pfsta.q):
         if RESOLVED_DEPENDENCY:
-            # ONLY NOT UL STATE CAN BE INITIAL RN
-            pfsta.i[0] = 0
-            pfsta.i[1] = 1
-            pfsta.i[2] = 0
-            pfsta.i[3] = 0
-            # random.seed(seeds[0])
-            # initial_random = random.sample(range(1, 100), len(pfsta.q)-1)
-            # initial_sum = sum(initial_random)
-            # initial_probabilites = [(r/initial_sum) for r in initial_random]
-            # if q<4:
-            #     pfsta.i[q] = initial_probabilites[i]  # initial probabilities
-            pfsta.i[4] = 0
+            if q == 1:
+                pfsta.i[q] = 1
+            else:
+                pfsta.i[q] = 0
         else:
             random.seed(seeds[0])
             initial_random = random.sample(range(1, 100), len(pfsta.q))
@@ -184,6 +176,20 @@ def print_tree(node, f=None):
         node.print_address(f)
         for n in node.children:
             print_tree(n, f)
+
+
+def get_terminals(node):
+    terminals = []
+    recurse_terminals(node, terminals)
+    return terminals
+
+
+def recurse_terminals(node, terminals):
+    if node:
+        if node.get_label != '*':
+            terminals.append(node.get_label())
+        for n in node.children:
+            recurse_terminals(n, terminals)
 
 
 def visual_print(node):

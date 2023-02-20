@@ -12,3 +12,17 @@
 * Given a larger corpora (still toy example), are we able to replicate what we find for haskell small corpora?
 * Get parsing of CHILDES figured out
 * Explore around of the CHILDES
+
+#### abstract notes
+
+* generally describe examples with only WH/V dependency, but we have also shown that WH dependency can be 
+  learned in dataset with V/NP pairs --> learsn verbs object or WH licensor? 
+
+
+* do we want to change to a 3 state PFSTA as described in abstract (ie without V/NP relationship)? 
+  * currently have a 5 state learner: 
+    {0: 'Licensor', 1: 'Neutral', 2: 'Verb (transitive) ', 3: 'Noun Phrase', 4: 'Unlicensed'}
+    0, 2, 3 are only states at nodes above leaf nodes (in goal PFSTA)
+
+
+
