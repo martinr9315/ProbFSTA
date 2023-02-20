@@ -17,6 +17,10 @@ As of now, these are modifiable via the global variables in ```over_under.py```.
 #### Learner Development
 Before testing the learner on the CHILDES database, it was tested by running trials on example treebanks both built by hand and generated from PFSTAs, as explained below.
 
+
+##### Running Trials
+To run a trial, run: ```python3 run_trials.py``` and follow the prompts. This uses the treebank generation described below to produce a treebnak for leanring.  The various randomly initialized PFSTAs are displayed, and then learned PFSTA and corresponding CFG that produces the best likelihood from 50 random initializations.
+
 ##### Tree Bank Generation
 A tree bank can be generated from a goal Probalistic Finite State Tree Automata, the PFSTA which we want the learner to learn.
 Currently, the goal PFSTA is set to be: 
@@ -35,8 +39,6 @@ Currently, the goal PFSTA is set to be:
     (4, '*', (2, )): 0.7222,
     (4, '*', (1, 4)): 0.2778                         
 ```
-To generate a tree bank, run: ```python3 generate_trees.py``` and follow the prompts to specify number of trees and output location. 
+To exclusively generate a tree bank, run: ```python3 generate_trees.py``` (this is not necessary if running trials, as the treebank is automatically generated) and follow the prompts to specify number of trees and output location. 
 
-##### Running Trials
-To run a trial, run: ```python3 trials.py``` and follow the prompts. This displayes the learned PFSTA and corresponding CFG that produces the best likelihood from 50 random initializations.
 
