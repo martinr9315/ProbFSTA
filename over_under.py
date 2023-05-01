@@ -71,6 +71,13 @@ def initialize_random(pfsta, n, terminals):
                 pfsta.delta[(q, t, ())] = delta_probabilites[j]
                 j += 1
 
+def initialize_goal(pfsta, n, terminals, goal):
+    initialize_random(pfsta, n, terminals)
+    # fix transitions
+    for t,v in pfsta.delta.items():
+        pfsta.delta[t] = goal.transition_prob(t)
+
+
 #  ----------- Tree utilities -------------
 
 
@@ -186,7 +193,7 @@ def get_terminals(node):
 
 def recurse_terminals(node, terminals):
     if node:
-        if node.get_label != '*':
+        if node.get_label() != '*':
             terminals.append(node.get_label())
         for n in node.children:
             recurse_terminals(n, terminals)

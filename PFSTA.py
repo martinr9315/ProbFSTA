@@ -47,7 +47,9 @@ class PFSTA:
     def print(self):
         print('Q:', self.q)
         print('I:', self.i)
-        print('Delta:', self.delta)
+        print('Delta:')
+        for t, k in self.delta.items():
+                print(str(t)+': '+str(round(k, 4)))
 
     def clean_print(self):
         print('Q:', self.q)

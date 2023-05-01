@@ -120,7 +120,7 @@ def generate_bank_from_pfsta(pfsta, n, max_depth=None):
         t.set_address('')
         over_under.assign_addresses(t)
         d = over_under.depth(t)
-        while max_depth and d and len(d) > max_depth:
+        while max_depth and (not d or len(d) > max_depth):
             t = generate_tree_from_pfsta(pfsta, root)
             t.set_address('')
             over_under.assign_addresses(t)
