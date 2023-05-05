@@ -38,7 +38,6 @@ MAX_DEPTH = 6
 
 assignment = {0: 'L', 1: 'N', 2: 'V', 3: 'NP', 4: 'UL'}
 
-# bank = parse(20000)
 directory = 'CHILDESTreebank/hslld-hv1-er/'
 filenames = ['CHILDESTreebank/brown-adam.parsed','CHILDESTreebank/valian+animacy+theta.parsed','CHILDESTreebank/brown-eve+animacy+theta.parsed']
 for filename in os.listdir(directory):
@@ -48,12 +47,14 @@ for filename in os.listdir(directory):
 filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
 bank = investigate_parse(filenames)
 split_bank = split_bank(bank)
-wh_bank = random.sample(depth_limit(split_bank['wh'], MAX_DEPTH), 15)
+non_c = split_bank['wh']+split_bank['v_np_only']
+# wh_bank = random.sample(depth_limit(split_bank['wh'], MAX_DEPTH), 15)
 # v_np_bank = random.sample(depth_limit(split_bank['v_np_only'], MAX_DEPTH), NUM_TREES)
 # c_bank = random.sample(depth_limit(split_bank['c_only'], MAX_DEPTH), NUM_TREES)
 
+bank = non_c
 rest = random.sample(depth_limit(bank, MAX_DEPTH), NUM_TREES)
-bank = wh_bank+rest
+# bank = wh_bank+rest
 
 # bank = random.sample(depth_limit(bank, MAX_DEPTH), NUM_TREES)
 

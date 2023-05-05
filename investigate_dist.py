@@ -8,7 +8,8 @@ for filename in os.listdir(directory):
     if os.path.isfile(f):
         filenames.append(f)
 filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
-for f in filenames:
-    print(f)
-    CHILDES_bank = investigate_parse([f])
-    print('\n\n')
+CHILDES_bank = investigate_parse(filenames)
+# for f in filenames:
+#     print(f)
+#     CHILDES_bank = investigate_parse([f])
+#     print('\n\n')

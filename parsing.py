@@ -290,6 +290,26 @@ def depth_limit(bank, n):
             shallow_bank.append(t)
     return shallow_bank
 
+def undo_copular_inversion(root):
+    root.set_address('')
+    assign_addresses(root)
+    addresses = get_address_list(root)
+    for a in addresses:
+        n = get_node(root, a)
+        if n.get_label() == 'SQ':
+            sq_node = n
+            if sq_node.children[0].get_label() == 'VP':
+                vp_node = sq_node.children[0]
+                if len(vp_node.children) > 2 and vp_node.children[0].get_label() == 'COP':
+                    cop_node = vp_node.children[0]
+                    right_sis = get_right_sis(root, cop_node.get_address())
+                    if len(right_sis) == 2 and right_sis[0].label == 'NP' and right_sis[1].label == 'NP':
+                        sq_node.children.insert(0, right_sis[0])
+                        del vp_node.children[1]
+                        root.set_address('')
+                        assign_addresses(root)
+                        return
+
 
 def investigate_clean_labels(root):
     root.set_address('')
@@ -339,6 +359,7 @@ def investigate_parse(filenames):
             t = remove_trailing_hyphen(remove_animacy(t))
             original = t
             tuple_tree = from_tuple(t)              # convert from tuple to tree
+            undo_copular_inversion(tuple_tree)
             investigate_clean_labels(tuple_tree)    # rewrite V w/o NP sister as C, only WHs with traces
             drop_punctuation(tuple_tree)            # drop punctuation
             tree = collapse_unary(tuple_tree)       # collapse unary branches (w/ same label) and complex V,NP
@@ -350,10 +371,10 @@ def investigate_parse(filenames):
             bank.append(tree)
             if 'WHNP' in str(original):
                 whnp_trees += 1
-                if "('SQ', ('NP', ('-NONE-ABAR-WH', '*t*-1')), ('VP'" not in str(original):
-                    whnp_obj_trees += 1
-                    if '*t*-' in str(original): 
-                        whnp_tr_trees += 1
+                if '-NONE-ABAR-' in str(original): 
+                    whnp_tr_trees += 1
+                    if "('SQ', ('NP', ('-NONE-ABAR-WH', '*t*-1')), ('VP'" not in str(original):
+                        whnp_obj_trees += 1
                         # if any(v in str(original) for v in VERB_LABELS): 
                         #     COP_pattern = r"'COP', (?:'is'|'are'|'were'|'was'|\"'s\")\), \('NP', \('-NONE-ABAR-WH-'"
                         #     if not re.search(COP_pattern, str(original)):
@@ -370,11 +391,12 @@ def investigate_parse(filenames):
             
     print('\n# trees:', count)
     print('WHNP trees:', whnp_trees, '-->', '{:.2%}'.format(whnp_trees/count)) 
-    print('\twith object question:', whnp_obj_trees, '-->', '{:.2%}'.format(whnp_obj_trees/count))
-    print('\t\twith trace:', whnp_tr_trees, '-->', '{:.2%}'.format(whnp_tr_trees/count))
+    print('\twith trace:', whnp_tr_trees, '-->', '{:.2%}'.format(whnp_tr_trees/count))
+    print('\t\twithout subject question:', whnp_obj_trees, '-->', '{:.2%}'.format(whnp_obj_trees/count))
+
     # print('\t\t\twith lexical verb:', whnp_tr_obj_lex_trees, '-->', '{:.2%}'.format(whnp_tr_obj_lex_trees/count))
 
     print('WH trees:', wh_trees, '-->', '{:.2%}'.format(wh_trees/count))
-    print('original contains WHNP -> parsed contains no WH:', whnp_tr_trees-wh_trees)
+    print('original contains WHNP -> parsed contains no WH:', whnp_obj_trees-wh_trees)
 
     return bank
