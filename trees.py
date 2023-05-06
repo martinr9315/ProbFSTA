@@ -146,8 +146,8 @@ def get_trees(f): ## CALL THIS FUNCTION ON FILE OF TREES
             errors = errors + 1
             # print("WARNING: Ignoring ill-formed tree: %s" % re.sub("\s+", " ", c))
 
-    if errors > 0:
-        print("WARNING: Ignored %d ill-formed trees" % errors)
+    # if errors > 0:
+    #     print("WARNING: Ignored %d ill-formed trees" % errors)
 
     return trees
 
@@ -183,8 +183,8 @@ def get_chunks(f):
                 current_chunk = current_chunk + c
         c = f.read(1)
 
-    if (current_chunk is not None) or (depth != 0):
-        print("WARNING: Treebank input ended with an incomplete parse tree")
+    # if (current_chunk is not None) or (depth != 0):
+    #     print("WARNING: Treebank input ended with an incomplete parse tree")
 
     return chunks
 
