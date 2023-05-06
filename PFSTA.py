@@ -36,6 +36,12 @@ class PFSTA:
 
     def get_terminals(self):
         return [t[1] for t in self.delta if len(t[2]) == 0]
+    
+    def get_state(self, output):
+        for t in self.delta.keys():
+            if output[0] == t[1] and output[1] == t[2]:
+                return t[0]
+        
 ############
 
     def get_under(self, node, state):
@@ -82,12 +88,12 @@ class PFSTA:
 
 
 class Node:
-    def __init__(self, label="*", state=None, children=[]):
+    def __init__(self, label="*", children=[]):
         self.children = children
         self.address = None
         self.label = label
         self.context = None
-        self.state = state  # only for use in annotated trees
+        self.state = None  # only for use in annotated trees
 
     def set_address(self, address):
         self.address = address
@@ -103,6 +109,12 @@ class Node:
 
     def star_label(self):
         self.label = '*'
+    
+    def set_state(self, state):
+        self.state = state
+    
+    def get_state(self):
+        return self.state
 
     def clear_tree_memos(self):
         self.under = {}
@@ -115,10 +127,7 @@ class Node:
         print("Node "+self.label, end=' ')
 
     def annotated_print(self):
-        if self.state is not None:
-            print("Node "+self.label, self.state, end=' ')
-        else:
-            print("Node "+self.label, end=' ')
+        print(self.address+":"+str(self.state)+', '+self.label)
 
     def print_address(self, f=None):
         if f is not None:

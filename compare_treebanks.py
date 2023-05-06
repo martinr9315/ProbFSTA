@@ -1,6 +1,6 @@
 from PFSTA import PFSTA
 from tree_generator import generate_bank_from_pfsta
-from parsing import parse, split_bank, investigate_parse, depth_limit
+from parsing import parse, split_bank, parse, depth_limit
 from over_under import depth, get_terminals
 import random, os
 from collections import Counter
@@ -123,7 +123,7 @@ for filename in os.listdir(directory):
     if os.path.isfile(f):
         filenames.append(f)
 filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
-CHILDES_bank = investigate_parse(filenames)
+CHILDES_bank = parse(filenames)
 for n in size:
     bank = random.sample(CHILDES_bank, n)
     split_bank_n = split_bank(bank)

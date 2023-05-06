@@ -1,24 +1,23 @@
 from trees import get_trees
-from PFSTA import Node, PFSTA
+from PFSTA import Node
 from over_under import (assign_addresses, print_tree, get_right_sis, get_left_sis, get_address_list, 
-                        get_node, star_nodes, tree_prob_via_over_no_order, tree_prob_via_under_no_order,
-                        get_terminals, depth)
-import signal, string, re, os
-
+                        get_node, star_nodes,get_terminals, depth)
+import signal, string, re
 
 VERB_LABELS = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ', 'COP']
 
-p = PFSTA(  [0, 1, 2, 3, 4],
-                {1: 1.0},
-                {(0, 'WH', ()): 1.0,
-                    (1, '*', (0, 4)): 0.097,
-                    (1, '*', (1, 1)): 0.2239,
-                    (1, '*', (2, 3)): 0.2612,
-                    (1, 'C', ()): 0.4179,
-                    (2, 'V', ()): 1.0,
-                    (3, 'NP', ()): 1.0,
-                    (4, '*', (2,)): 0.7222,    # unary branching for unlicensed V
-                    (4, '*', (1, 4)): 0.2778})
+# p = PFSTA(  [0, 1, 2, 3, 4],
+#                 {1: 1.0},
+#                 {(0, 'WH', ()): 1.0,
+#                     (1, '*', (0, 4)): 0.097,
+#                     (1, '*', (1, 1)): 0.2239,
+#                     (1, '*', (2, 3)): 0.2612,
+#                     (1, 'C', ()): 0.4179,
+#                     (2, 'V', ()): 1.0,
+#                     (3, 'NP', ()): 1.0,
+#                     (4, '*', (2,)): 0.7222,    # unary branching for unlicensed V
+#                     (4, '*', (1, 4)): 0.2778})
+
 
 def raw(t):
     return ''.join(ch for ch in str(t) if not ch.isupper() 
@@ -73,41 +72,13 @@ def remove_trailing_hyphen(t):
     return tuple(result)
 
 
-def clean_labels(root):
-    # V and NP need to be direct sisters, in order
-    root.set_address('')
-    assign_addresses(root)
-    addresses = get_address_list(root)
-    traces = []
-    for a in addresses:
-        n = get_node(root, a)
-        if n.get_label() in VERB_LABELS:
-            n.set_label('V')
-            right_sis = get_right_sis(root, a)
-            if len(right_sis) == 0 or right_sis[0].label != 'NP':
-                n.set_label('C')
-        elif n.get_label() == 'NP':
-            left_sis = get_left_sis(root, a)
-            if len(left_sis) == 0 or left_sis[len(left_sis)-1].label != 'V':
-                n.set_label('C')
-            else:
-                for c in n.children:
-                    if '-NONE-ABAR-' in c.label:
-                        traces.append(c.children[0].label[-1])
-                        n.set_label('trace')
-        elif n.get_label() not in string.punctuation and 'WHNP' not in n.get_label():
-            n.set_label('C')
-    for a in addresses:
-        n = get_node(root, a)
-        if 'WHNP' in n.get_label() and n.get_label()[-1] in traces:
-            n.set_label('WH')
-        
 def drop_punctuation(node): 
     if not node.children:
         return
     node.children = [child for child in node.children if child.label not in string.punctuation]
     for child in node.children:
         drop_punctuation(child)
+
 
 def drop_traces(node): 
     if not node.children:
@@ -173,6 +144,7 @@ def test_binarize():
     assign_addresses(binary_tree)
     print_tree(binary_tree)
 
+
 def test_collapse():
     tree1 = Node('*')
     tree1.children = [Node('*')]
@@ -185,87 +157,6 @@ def test_collapse():
     collapsed.set_address('')
     assign_addresses(collapsed)
     print_tree(collapsed)
-
-def test_parse(n):
-    timeouts = []
-    zeros = []
-    f = open('CHILDESTreebank/brown-adam.parsed', "r")
-    trees = get_trees(f)
-    print(len(trees))
-    for i, t in enumerate(trees[:n]):
-        # if 'FRAG' not in str(t): 
-
-        print('-')
-        tuple_tree = from_tuple(t)              # convert from tuple to tree
-        print(raw(t))
-        # print('original tree')                # print original tree
-        # tuple_tree.set_address('')
-        # assign_addresses(tuple_tree)
-        # print_tree(tuple_tree)
-        # print('-')
-
-        clean_labels(tuple_tree)                # rewrite V w/o NP sister as C, only WHs with traces
-        drop_punctuation(tuple_tree)
-
-        tree = collapse_unary(tuple_tree)      # collapse unary branches (w/ same label) and complex V,NP
-
-        tree.set_address('')
-        assign_addresses(tree)
-        star_nodes(tree)                        # star all inner nodes
-
-        print('collapsed tree')
-        print_tree(tree)
-        print('-')
-
-
-        print('binarized tree')
-        tree = binarize(tree)                   # binarize tree
-        drop_traces(tree)
-        tree.set_address('')
-        assign_addresses(tree)
-        print_tree(tree)
-        print('-')
-
-        time_limit = 60                         # set the time limit in seconds
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(time_limit)
-        try:
-            prob = tree_prob_via_over_no_order(p, tree)
-            # print(tree_prob_via_under_no_order(p, tree))
-        except TimeoutError as e:
-            print(e)
-            timeouts.append((i,t))
-            continue
-        else:
-            print('over prob:', prob)
-        finally:
-            signal.alarm(0)
-
-        # assert prob != 0                        # make sure all trees are possible with goal PFSTA
-        if prob == 0:
-            zeros.append((i))
-        print('--\n')
-
-    print('Timed out on: ', len(timeouts), '\n', timeouts)
-    print('Zeros on: ', len(zeros), '\n', zeros)
-
-
-def parse(n):
-    bank = []
-    f = open('CHILDESTreebank/brown-adam.parsed', "r")
-    trees = get_trees(f)
-    for i, t in enumerate(trees[:n]):
-        tuple_tree = from_tuple(t)              # convert from tuple to tree
-        clean_labels(tuple_tree)                # rewrite V w/o NP sister as C, only WHs with traces
-        drop_punctuation(tuple_tree)            # drop punctuation
-        tree = collapse_unary(tuple_tree)       # collapse unary branches (w/ same label) and complex V,NP
-        star_nodes(tree)                        # star all inner nodes
-        tree = binarize(tree)                   # binarize tree
-        drop_traces(tree)                       # drop traces
-        tree.set_address('')                    # set addresses
-        assign_addresses(tree)
-        bank.append(tree)
-    return bank
 
 
 def split_bank(bank):
@@ -290,6 +181,7 @@ def depth_limit(bank, n):
             shallow_bank.append(t)
     return shallow_bank
 
+
 def undo_copular_inversion(root):
     root.set_address('')
     assign_addresses(root)
@@ -311,7 +203,7 @@ def undo_copular_inversion(root):
                         return
 
 
-def investigate_clean_labels(root):
+def clean_labels(root):
     root.set_address('')
     assign_addresses(root)
     addresses = get_address_list(root)
@@ -344,13 +236,12 @@ def investigate_clean_labels(root):
             n.set_label('C')
 
 
-def investigate_parse(filenames):
+def parse(filenames):
     bank = []
     wh_trees = 0
     whnp_trees = 0
     whnp_tr_trees = 0
     whnp_obj_trees = 0
-    whnp_tr_obj_lex_trees = 0
     count = 0
     for filename in filenames:
         f = open(filename, "r")
@@ -360,7 +251,7 @@ def investigate_parse(filenames):
             original = t
             tuple_tree = from_tuple(t)              # convert from tuple to tree
             undo_copular_inversion(tuple_tree)
-            investigate_clean_labels(tuple_tree)    # rewrite V w/o NP sister as C, only WHs with traces
+            clean_labels(tuple_tree)    # rewrite V w/o NP sister as C, only WHs with traces
             drop_punctuation(tuple_tree)            # drop punctuation
             tree = collapse_unary(tuple_tree)       # collapse unary branches (w/ same label) and complex V,NP
             star_nodes(tree)                        # star all inner nodes
@@ -368,7 +259,8 @@ def investigate_parse(filenames):
             drop_traces(tree)                       # drop traces
             tree.set_address('')                    # set addresses
             assign_addresses(tree)
-            bank.append(tree)
+            if i not in [1801, 16194, 28312, 6564] and 'kind' not in str(original):
+                bank.append(tree)
             if 'WHNP' in str(original):
                 whnp_trees += 1
                 if '-NONE-ABAR-' in str(original): 
@@ -388,15 +280,13 @@ def investigate_parse(filenames):
             if 'WH' in get_terminals(tree):
                 wh_trees += 1
             count += 1
-            
-    print('\n# trees:', count)
-    print('WHNP trees:', whnp_trees, '-->', '{:.2%}'.format(whnp_trees/count)) 
-    print('\twith trace:', whnp_tr_trees, '-->', '{:.2%}'.format(whnp_tr_trees/count))
-    print('\t\twithout subject question:', whnp_obj_trees, '-->', '{:.2%}'.format(whnp_obj_trees/count))
 
-    # print('\t\t\twith lexical verb:', whnp_tr_obj_lex_trees, '-->', '{:.2%}'.format(whnp_tr_obj_lex_trees/count))
+    # print('\n# trees:', count)
+    # print('WHNP trees:', whnp_trees, '-->', '{:.2%}'.format(whnp_trees/count)) 
+    # print('\twith trace:', whnp_tr_trees, '-->', '{:.2%}'.format(whnp_tr_trees/count))
+    # print('\t\twithout subject question:', whnp_obj_trees, '-->', '{:.2%}'.format(whnp_obj_trees/count))
 
-    print('WH trees:', wh_trees, '-->', '{:.2%}'.format(wh_trees/count))
-    print('original contains WHNP -> parsed contains no WH:', whnp_obj_trees-wh_trees)
+    # print('WH trees:', wh_trees, '-->', '{:.2%}'.format(wh_trees/count))
+    # print('original contains WHNP -> parsed contains no WH:', whnp_obj_trees-wh_trees)
 
     return bank

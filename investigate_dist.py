@@ -1,4 +1,4 @@
-from parsing import investigate_parse, split_bank
+from parsing import parse 
 import os
 
 directory = 'CHILDESTreebank/hslld-hv1-er/'
@@ -8,8 +8,9 @@ for filename in os.listdir(directory):
     if os.path.isfile(f):
         filenames.append(f)
 filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
-CHILDES_bank = investigate_parse(filenames)
+CHILDES_bank = parse(filenames)
 # for f in filenames:
 #     print(f)
-#     CHILDES_bank = investigate_parse([f])
+#     CHILDES_bank = parse([f])
 #     print('\n\n')
+

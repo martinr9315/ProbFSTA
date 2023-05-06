@@ -184,6 +184,12 @@ def print_tree(node, f=None):
         for n in node.children:
             print_tree(n, f)
 
+def print_annotated_tree(node):
+    if node:
+        node.annotated_print()
+        for n in node.children:
+            print_annotated_tree(n)
+
 
 def get_terminals(node):
     terminals = []
