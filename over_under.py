@@ -48,22 +48,22 @@ def initialize_random(pfsta, n, terminals):
         if ASSIGN_STATES:
             if q == 0:
                 pfsta.delta[(q, 'WH', ())] = delta_probabilites[j]
-                pfsta.delta[(q, 'C', ())] = 0.0
+                pfsta.delta[(q, 'X', ())] = 0.0
                 pfsta.delta[(q, 'V', ())] = 0.0
                 pfsta.delta[(q, 'NP', ())] = 0.0
             elif q == 1:
                 pfsta.delta[(q, 'WH', ())] = 0.0
-                pfsta.delta[(q, 'C', ())] = delta_probabilites[j]
+                pfsta.delta[(q, 'X', ())] = delta_probabilites[j]
                 pfsta.delta[(q, 'V', ())] = 0.0
                 pfsta.delta[(q, 'NP', ())] = 0.0
             elif q == 2:
                 pfsta.delta[(q, 'WH', ())] = 0.0
-                pfsta.delta[(q, 'C', ())] = 0.0
+                pfsta.delta[(q, 'X', ())] = 0.0
                 pfsta.delta[(q, 'V', ())] = delta_probabilites[j]
                 pfsta.delta[(q, 'NP', ())] = 0.0
             elif q == 3:
                 pfsta.delta[(q, 'WH', ())] = 0.0
-                pfsta.delta[(q, 'C', ())] = 0.0
+                pfsta.delta[(q, 'X', ())] = 0.0
                 pfsta.delta[(q, 'V', ())] = 0.0
                 pfsta.delta[(q, 'NP', ())] = delta_probabilites[j]
         else:

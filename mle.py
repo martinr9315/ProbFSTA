@@ -11,7 +11,7 @@ def pfsta_mle(treebank):
                          (1, '*', (0, 4)): 1,
                          (1, '*', (1, 1)): 1,
                          (1, '*', (2, 3)): 1,
-                         (1, 'C', ()): 1,
+                         (1, 'X', ()): 1,
                          (2, 'V', ()): 1,
                          (3, 'NP', ()): 1,
                          (4, '*', (2,)): 1,    
@@ -59,16 +59,16 @@ def pfsta_mle(treebank):
 # pfsta_mle([tree1])
 # print_annotated_tree(tree1)
 
-# directory = 'CHILDESTreebank/hslld-hv1-er/'
-# filenames = ['CHILDESTreebank/brown-adam.parsed','CHILDESTreebank/valian+animacy+theta.parsed','CHILDESTreebank/brown-eve+animacy+theta.parsed']
-# for filename in os.listdir(directory):
-#     f = os.path.join(directory, filename)
-#     if os.path.isfile(f):
-#         filenames.append(f)
-# filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
-# CHILDES_bank = parse(filenames)
-# p = pfsta_mle(CHILDES_bank)
-# p.clean_print()
+directory = 'CHILDESTreebank/hslld-hv1-er/'
+filenames = ['CHILDESTreebank/brown-adam.parsed','CHILDESTreebank/valian+animacy+theta.parsed','CHILDESTreebank/brown-eve+animacy+theta.parsed']
+for filename in os.listdir(directory):
+    f = os.path.join(directory, filename)
+    if os.path.isfile(f):
+        filenames.append(f)
+filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
+CHILDES_bank = parse(filenames)
+p = pfsta_mle(CHILDES_bank)
+p.clean_print()
 
 #                       :None, *
 #          0:None, *                         1:4, *

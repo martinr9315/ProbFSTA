@@ -14,7 +14,7 @@ goal_pfsta = PFSTA( [0, 1, 2, 3, 4],
                     (1, '*', (0, 4)): 0.0688,
                     (1, '*', (1, 1)): 0.2982,
                     (1, '*', (2, 3)): 0.2523,
-                    (1, 'C', ()): 0.3807,
+                    (1, 'X', ()): 0.3807,
                     (2, 'V', ()): 1.0,
                     (3, 'NP', ()): 1.0,
                     (4, '*', (1, 2)): 0.6818,
@@ -36,7 +36,7 @@ likelihood_times = []
 for i in range(num_pfstas):
     print('#', i+1)
     p = PFSTA()
-    over_under.initialize_random(p, 4, ['Wh', 'V', 'C', 'NP'])
+    over_under.initialize_random(p, 4, ['Wh', 'V', 'X', 'NP'])
     p.clean_print()
     print('--')
     st = time.time()

@@ -10,13 +10,13 @@ import tree_generator
 
 tree1 = Node('*')
 tree1.children = [Node('*'), Node('A')]
-tree1.children[0].children = [Node('C'), Node('B')]
+tree1.children[0].children = [Node('X'), Node('B')]
 tree1.set_address('')
 over_under.assign_addresses(tree1)
 
 tree2 = Node('*')
 tree2.children = [Node('A'), Node('*')]
-tree2.children[1].children = [Node('B'), Node('C')]
+tree2.children[1].children = [Node('B'), Node('X')]
 tree2.set_address('')
 over_under.assign_addresses(tree2)
 
@@ -24,7 +24,7 @@ over_under.assign_addresses(tree2)
 #                {1: 1.0},
 #                {(1, 'a', (2)): 0.2,
 #                 (1, 'a', (2, 2)): 0.3,
-#                 (2, 'c', (3, 3)): 0.2,
+#                 (2, 'X', (3, 3)): 0.2,
 #                 (2, 'b', ()): 0.1,
 #                 (3, 'd', ()): 0.1,
 #                 (3, 'e', ()): 0.1})
@@ -47,7 +47,7 @@ debug_pfsta = PFSTA([0, 1],
                     (1, "B", ()): 0.1,
                     (1, "C", ()): 0.1})
 
-# bank = tree_generator.generate_bank(['A', 'B', 'C'], 4, 50)
+# bank = tree_generator.generate_bank(['A', 'B', 'X'], 4, 50)
 # for t in bank:
 #     over_under.print_tree(t)
 #     print("--")
@@ -60,7 +60,7 @@ highest = 0
 index = 0
 for i in range(50):
     p = PFSTA()
-    over_under.initialize_random(p, 2, ['A', 'B', 'C'])
+    over_under.initialize_random(p, 2, ['A', 'B', 'X'])
     # p.clean_print()
     new_p = update_n(p, trees, 50)
     new_p_likelihood = likelihood(new_p, trees)
@@ -83,7 +83,7 @@ print(highest)
 
 
 # p = PFSTA()
-# over_under.initialize_random(p, 2, ['A', 'B', 'C'])
+# over_under.initialize_random(p, 2, ['A', 'B', 'X'])
 # new_p = update_n(p, [trees[0]], 500)
 # new_p.clean_print()
 # print(over_under.tree_prob_via_under(new_p, trees[0]))

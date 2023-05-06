@@ -6,19 +6,6 @@ import signal, string, re
 
 VERB_LABELS = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ', 'COP']
 
-# p = PFSTA(  [0, 1, 2, 3, 4],
-#                 {1: 1.0},
-#                 {(0, 'WH', ()): 1.0,
-#                     (1, '*', (0, 4)): 0.097,
-#                     (1, '*', (1, 1)): 0.2239,
-#                     (1, '*', (2, 3)): 0.2612,
-#                     (1, 'C', ()): 0.4179,
-#                     (2, 'V', ()): 1.0,
-#                     (3, 'NP', ()): 1.0,
-#                     (4, '*', (2,)): 0.7222,    # unary branching for unlicensed V
-#                     (4, '*', (1, 4)): 0.2778})
-
-
 def raw(t):
     return ''.join(ch for ch in str(t) if not ch.isupper() 
                                           and ch not in string.punctuation 
@@ -134,7 +121,7 @@ def timeout_handler(signum, frame):
 
 def test_binarize():
     tree1 = Node('*')
-    tree1.children = [Node('V'), Node('NP'), Node('C')]
+    tree1.children = [Node('V'), Node('NP'), Node('X')]
     tree1.set_address('')
     assign_addresses(tree1)
     print_tree(tree1)
@@ -148,7 +135,7 @@ def test_binarize():
 def test_collapse():
     tree1 = Node('*')
     tree1.children = [Node('*')]
-    tree1.children[0].children = [Node('V'), Node('NP'), Node('C'), Node('V'), Node('NP')]
+    tree1.children[0].children = [Node('V'), Node('NP'), Node('X'), Node('V'), Node('NP')]
     tree1.set_address('')
     assign_addresses(tree1)
     print_tree(tree1)
@@ -214,18 +201,18 @@ def clean_labels(root):
             n.set_label('V')
             right_sis = get_right_sis(root, a)
             if len(right_sis) == 0 or right_sis[0].label != 'NP':
-                n.set_label('C')
+                n.set_label('X')
         elif n.get_label() == 'NP':
             left_sis = get_left_sis(root, a)
             if len(left_sis) == 0 or left_sis[len(left_sis)-1].label != 'V':
-                n.set_label('C')
+                n.set_label('X')
             else:
                 for c in n.children:
                     if '-NONE-ABAR-' in c.label:
                         traces.append(c.children[0].label[-1])
                         n.set_label('trace')
         elif n.get_label() not in string.punctuation and 'WHNP' not in n.get_label() and 'PP' not in n.get_label():
-            n.set_label('C')
+            n.set_label('X')
     for a in addresses:
         n = get_node(root, a)
         if 'WHNP' in n.get_label() and n.get_label()[-1] in traces:
@@ -233,7 +220,7 @@ def clean_labels(root):
     for a in addresses:
         n = get_node(root, a)
         if 'PP' in n.get_label():
-            n.set_label('C')
+            n.set_label('X')
 
 
 def parse(filenames):

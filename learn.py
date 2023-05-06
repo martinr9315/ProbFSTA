@@ -56,7 +56,7 @@ timeouts = 0
 for i in range(NUM_PFSTAS):
     print('#', i+1)
     p = PFSTA()
-    over_under.initialize_random(p, 4, ['WH', 'V', 'C', 'NP'])
+    over_under.initialize_random(p, 4, ['WH', 'V', 'X', 'NP'])
     p.print()
     print('--')
     st = time.time()

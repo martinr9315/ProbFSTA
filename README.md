@@ -4,7 +4,7 @@
 #### CHILDES Trials
 
 ##### Parsing
-The parsing of the CHILDES database occurs in trees.py and parsing.py. The parses in the database are cleaned to only contain transitive verbs and wh-licensing of transitive verbs, leaving the rest as neutral 'C' terminals.
+The parsing of the CHILDES database occurs in trees.py and parsing.py. The parses in the database are cleaned to only contain transitive verbs and wh-licensing of transitive verbs, leaving the rest as neutral 'X' terminals.
 
 ##### Learning
 To run the EM learner on trees from the CHILDES database, run ```python learn.py```. The global variables NUM_PFSTAS, NUM_TREES, TIME_LIMIT, set the number of randomly initialized PFSTAs, the number of trees to randomly sample from CHILDES, and the computation time limit in seconds, respectively.
@@ -33,7 +33,7 @@ Currently, the goal PFSTA is set to be:
     (1, '*', (0, 4)): 0.097,
     (1, '*', (1, 1)): 0.2239,
     (1, '*', (2, 3)): 0.2612,
-    (1, 'C', ()): 0.4179,
+    (1, 'X', ()): 0.4179,
     (2, 'V', ()): 1.0,
     (3, 'NP', ()): 1.0,
     (4, '*', (2, )): 0.7222,
