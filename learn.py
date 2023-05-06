@@ -3,33 +3,10 @@ import over_under
 from expectation_maximization import (  likelihood_no_order,
                                         update_no_order_until,
                                         update_n)
-from parsing import parse, split_bank, depth_limit, timeout_handler, investigate_parse
-import time, signal, random, copy, os
+from parsing import parse, split_bank, depth_limit, timeout_handler, parse
+import time, signal, random, os
+from mle import pfsta_mle
 
-
-goal_pfsta = PFSTA(   [0, 1, 2, 3, 4],
-                        {1: 1.0},
-                        {(0, 'WH', ()): 1.0,
-                         (1, '*', (0, 4)): 0.097,
-                         (1, '*', (1, 1)): 0.2239,
-                         (1, '*', (2, 3)): 0.2612,
-                         (1, 'C', ()): 0.4179,
-                         (2, 'V', ()): 1.0,
-                         (3, 'NP', ()): 1.0,
-                         (4, '*', (2,)): 0.7222,    # unary branching for unlicensed V
-                         (4, '*', (1, 4)): 0.2778})
-
-goal_pfsta_2 = PFSTA(   [0, 1, 2, 3, 4],
-                        {1: 1.0},
-                        {(0, 'WH', ()): 1.0,
-                         (1, '*', (0, 4)): 0.297,
-                         (1, '*', (1, 1)): 0.2339,
-                         (1, '*', (2, 3)): 0.2612,
-                         (1, 'C', ()): 0.2079,
-                         (2, 'V', ()): 1.0,
-                         (3, 'NP', ()): 1.0,
-                         (4, '*', (2,)): 0.5122,    # unary branching for unlicensed V
-                         (4, '*', (1, 4)): 0.4878})
 
 NUM_PFSTAS = 10             # number of randomly initialized PFSTAs
 NUM_TREES = 50              # number of trees to randomly sample from CHILDES
@@ -45,17 +22,16 @@ for filename in os.listdir(directory):
     if os.path.isfile(f):
         filenames.append(f)
 filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
-bank = investigate_parse(filenames)
-split_bank = split_bank(bank)
-non_c = split_bank['wh']+split_bank['v_np_only']
+full_bank = parse(filenames)
+split_bank = split_bank(full_bank)
+non_c = split_bank['wh']+split_bank['v_np']
 # wh_bank = random.sample(depth_limit(split_bank['wh'], MAX_DEPTH), 15)
 # v_np_bank = random.sample(depth_limit(split_bank['v_np_only'], MAX_DEPTH), NUM_TREES)
 # c_bank = random.sample(depth_limit(split_bank['c_only'], MAX_DEPTH), NUM_TREES)
 
-bank = non_c
-rest = random.sample(depth_limit(bank, MAX_DEPTH), NUM_TREES)
-# bank = wh_bank+rest
 
+bank = random.sample(depth_limit(non_c, MAX_DEPTH), NUM_TREES)
+# bank = wh_bank+rest
 # bank = random.sample(depth_limit(bank, MAX_DEPTH), NUM_TREES)
 
 for t in bank:
@@ -67,7 +43,10 @@ for t in bank:
     d += len(over_under.depth(t))
 print('Avg depth:', d/len(bank), '\n')
 
-# CHILDES_likelihood = likelihood_no_order(goal_pfsta_2, bank)
+p = pfsta_mle(bank)
+p.clean_print()
+likelihood = likelihood_no_order(p, bank)
+print('likelihood with mle pfsta:', likelihood)
 
 new_pfstas = []
 highest = -2000000000
@@ -104,9 +83,9 @@ for i in range(NUM_PFSTAS):
     finally:
         signal.alarm(0)
 
-# print('Likelihood with goal pfsta:', CHILDES_likelihood)
+print('likelihood with mle pfsta:', likelihood)
 best = new_pfstas[index]
-print(NUM_PFSTAS, "initializations,", "100 trees (25% WH), max depth", MAX_DEPTH)
+print(NUM_PFSTAS, "initializations,", NUM_TREES, "trees, max depth", MAX_DEPTH)
 print("Best likelihood:", likelihood_no_order(best, bank))
 
 best.clean_print()
