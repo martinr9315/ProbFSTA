@@ -17,7 +17,7 @@ def initialize_random(pfsta, n, terminals):
     else:
         state_seq = possible_lists(pfsta.q, 2)
     seeds = random.sample(range(1, 100), len(pfsta.q))
-    print("Seeds:", seeds)
+    # print("Seeds:", seeds)
     for i, q in enumerate(pfsta.q):
         if RESOLVED_DEPENDENCY:
             if q == 1:

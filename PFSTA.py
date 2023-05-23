@@ -55,7 +55,7 @@ class PFSTA:
         print('I:', self.i)
         print('Delta:')
         for t, k in self.delta.items():
-                print(str(t)+': '+str(round(k, 4)))
+                print(str(t)+': '+str(round(k, 6)))
 
     def clean_print(self):
         print('Q:', self.q)
@@ -88,12 +88,12 @@ class PFSTA:
 
 
 class Node:
-    def __init__(self, label="*", children=[]):
+    def __init__(self, label="*", state=None, children=[]):
         self.children = children
         self.address = None
         self.label = label
         self.context = None
-        self.state = None  # only for use in annotated trees
+        self.state = state  # only for use in annotated trees
 
     def set_address(self, address):
         self.address = address
