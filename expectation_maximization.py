@@ -4,7 +4,6 @@ from over_under import (get_address_list, get_context, get_node,
                         prob_under_no_order, prob_over_no_order,
                         tree_prob_via_under, order)
 from PFSTA import PFSTA
-import math
 import numpy as np
 
 
@@ -287,88 +286,30 @@ def likelihood_no_order(pfsta, trees):
     for t in trees:
         prob = tree_prob_via_under_no_order(pfsta, t)
         if prob != 0:
-            product += math.log(prob)
+            product += np.log(prob)
         if prob == 0:
             product += float('-inf')
     return product
 
 
 def likelihood_counts(pfsta, counts):
-    # counts ie breakdown of annotated trees
-    product = 1
-    for hidden_event, prob in counts.hidden_events.items():
+    log_product = 0
+    for hidden_event, count in counts.hidden_events.items():
         if hidden_event.start:
-            product *= np.power(pfsta.start_prob(hidden_event.state), prob)
+            log_product += np.log(np.power(pfsta.start_prob(hidden_event.state), count))
         else:
-            product *= np.power(pfsta.transition_prob((hidden_event.state, 
-                                                       hidden_event.label, 
-                                                       hidden_event.children_states)), prob)
-    return product
+            prob = pfsta.transition_prob((hidden_event.state, 
+                                          hidden_event.label, 
+                                          hidden_event.children_states))
+            if prob:
+                log_product += count*np.log(prob)
+    return log_product
+
 
 ############ TESTING
 ######## with regularization
-import numpy as np
 
-# attempt #1 (dirichlet)
-def estimate_from_counts_dirichlet(states, soft_counts):
-    start_dist = {}
-    step_dist = {}
-    for hidden_event, prob in soft_counts.hidden_events.items():
-        if hidden_event.start:
-            start_dist[hidden_event.state] = prob
-        else:
-            dist_by_state = step_dist.get(hidden_event.state, {})
-            dist_by_state[(hidden_event.state, hidden_event.label, 
-                           hidden_event.children_states)] = prob
-            step_dist[hidden_event.state] = dist_by_state
-    flattened_step_dist = {}
-    rng = np.random.default_rng()
-    for dist in step_dist.values():
-        alpha = [0.5] * len(dist.items())
-        sample = rng.dirichlet(alpha)
-        dirichleted = {}
-        i = 0
-        for key, value in dist.items():
-            dirichleted[key] = value * sample[i]
-            i+=1
-        normalize(dirichleted)
-        for k, v in dirichleted.items():
-            flattened_step_dist[k] = v
-    normalize(start_dist)
-    new_pfsta = PFSTA(states, start_dist, flattened_step_dist)
-    return new_pfsta
-
-def update_dirichlet(pfsta, trees):
-    expected_counts = expectations_from_corpus_no_order(pfsta, trees)
-    new_pfsta = estimate_from_counts_dirichlet(pfsta.q, expected_counts)
-    pfsta.overs.clear()
-    pfsta.unders.clear()
-    return new_pfsta
-
-def update_no_order_until_dirichlet(pfsta, trees, e):
-    m = pfsta
-    old_likelihood = 0
-    new_likelihood = likelihood_no_order(pfsta, trees)
-    while abs(old_likelihood-new_likelihood) > e:
-        m = update_dirichlet(m, trees)
-        old_likelihood = new_likelihood
-        new_likelihood = likelihood_no_order(m, trees)
-        print('\tlikelihood:', new_likelihood)
-    return m
-
-def likelihood_no_order_dirichlet(pfsta, trees):
-    # how do i adjust this...?
-    product = 0
-    for t in trees:
-        prob = tree_prob_via_under_no_order(pfsta, t)
-        if prob != 0:
-            product += math.log(prob)
-        if prob == 0:
-            product += float('-inf')
-    penalty = 0 # ????????
-    return product - penalty
-
-# attempt #2 (squared soft threshold)
+# squared soft threshold
 THRESHOLD = .01
 
 def squared_soft_threshold(d):
@@ -422,7 +363,7 @@ def likelihood_no_order_sst(pfsta, trees):
     for t in trees:
         prob = tree_prob_via_under_no_order(pfsta, t)
         if prob != 0:
-            product += math.log(prob)
+            product += np.log(prob)
         if prob == 0:
             product += float('-inf')
     penalty = 0
@@ -431,130 +372,22 @@ def likelihood_no_order_sst(pfsta, trees):
     #         penalty += np.power(np.maximum(v - THRESHOLD, 0.0000001), 2)
     return product - penalty
 
-# attempt #3 (L1/penalization)
-L = 0.5
 
-def pen_L1(d):
-    # L1 
-    penalized_d = {}
-    for k, v in d.items():
-        if v != 0:
-            penalized_d[k] = np.maximum(v - L * np.abs(v - 1), 0.0000001)
-    return penalized_d
-
-def estimate_from_counts_pen_L1(states, soft_counts):
-    start_dist = {}
-    step_dist = {}
-    for hidden_event, prob in soft_counts.hidden_events.items():
-        if hidden_event.start:
-            start_dist[hidden_event.state] = prob
-        else:
-            dist_by_state = step_dist.get(hidden_event.state, {})
-            dist_by_state[(hidden_event.state, hidden_event.label, 
-                           hidden_event.children_states)] = prob
-            step_dist[hidden_event.state] = dist_by_state
-    flattened_step_dist = {}
-    for dist in step_dist.values():
-        scaled = pen_L1(dist)
-        normalize(scaled)
-        for k, v in scaled.items():
-            flattened_step_dist[k] = v
-    normalize(start_dist)
-    new_pfsta = PFSTA(states, start_dist, flattened_step_dist)
-    return new_pfsta
-
-def update_pen_L1(pfsta, trees):
+# penalization
+def update_pen(pfsta, trees):
     expected_counts = expectations_from_corpus_no_order(pfsta, trees)
-    new_pfsta = estimate_from_counts_pen_L1(pfsta.q, expected_counts)
+    new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
+    likelihood = likelihood_counts(new_pfsta, expected_counts)
     pfsta.overs.clear()
     pfsta.unders.clear()
-    return new_pfsta
+    return new_pfsta, likelihood
 
-
-def update_no_order_until_pen_L1(pfsta, trees, e):
+def update_no_order_until_pen(pfsta, trees, e):
     m = pfsta
-    old_likelihood = 0
-    new_likelihood = likelihood_no_order_pen_L1(pfsta, trees)
+    old_likelihood = 1
+    new_likelihood = 0
     while abs(old_likelihood-new_likelihood) > e:
-        m = update_pen_L1(m, trees)
         old_likelihood = new_likelihood
-        new_likelihood = likelihood_no_order_pen_L1(m, trees)
-        print('\tpenalized (L1) likelihood:', new_likelihood)
-    return m
-
-def likelihood_no_order_pen_L1(pfsta, trees):
-    product = 0
-    for t in trees:
-        prob = tree_prob_via_under_no_order(pfsta, t)
-        if prob != 0:
-            product += math.log(prob)
-        if prob == 0:
-            product += float('-inf')
-    penalty = 0
-    for k,v in pfsta.delta.items():
-        if v!=0:
-            penalty += L*np.abs(v-1)
-    return product - penalty
-
-# attempt #4 (L2/penalization)
-def pen_L2(d):
-    # L2
-    penalized_d = {}
-    for k, v in d.items():
-        if v != 0:
-            penalized_d[k] = np.maximum(v - L * np.power((v - 1), 2), 0.0000001)
-    return penalized_d
-
-def estimate_from_counts_pen_L2(states, soft_counts):
-    start_dist = {}
-    step_dist = {}
-    for hidden_event, prob in soft_counts.hidden_events.items():
-        if hidden_event.start:
-            start_dist[hidden_event.state] = prob
-        else:
-            dist_by_state = step_dist.get(hidden_event.state, {})
-            dist_by_state[(hidden_event.state, hidden_event.label, 
-                           hidden_event.children_states)] = prob
-            step_dist[hidden_event.state] = dist_by_state
-    flattened_step_dist = {}
-    for dist in step_dist.values():
-        scaled = pen_L2(dist)
-        normalize(scaled)
-        for k, v in scaled.items():
-            flattened_step_dist[k] = v
-    normalize(start_dist)
-    new_pfsta = PFSTA(states, start_dist, flattened_step_dist)
-    return new_pfsta
-
-def update_pen_L2(pfsta, trees):
-    expected_counts = expectations_from_corpus_no_order(pfsta, trees)
-    print('cl:',likelihood_counts(pfsta, expected_counts))
-    new_pfsta = estimate_from_counts_pen_L2(pfsta.q, expected_counts)
-    pfsta.overs.clear()
-    pfsta.unders.clear()
-    return new_pfsta
-
-def update_no_order_until_pen_L2(pfsta, trees, e):
-    m = pfsta
-    old_likelihood = 0
-    new_likelihood = likelihood_no_order_pen_L2(pfsta, trees)
-    while abs(old_likelihood-new_likelihood) > e:
-        m = update_pen_L2(m, trees)
-        old_likelihood = new_likelihood
-        new_likelihood = likelihood_no_order_pen_L2(m, trees)
-        print('\tpenalized (L2) likelihood:', new_likelihood)
-    return m
-
-def likelihood_no_order_pen_L2(pfsta, trees):
-    product = 0
-    for t in trees:
-        prob = tree_prob_via_under_no_order(pfsta, t)
-        if prob != 0:
-            product += math.log(prob)
-        if prob == 0:
-            product += float('-inf')
-    penalty = 0
-    for k,v in pfsta.delta.items():
-        if v!=0:
-            penalty += L*np.power((v - 1), 2)
-    return product - penalty
+        m, new_likelihood = update_pen(m, trees)
+        print('\tlikelihood:', new_likelihood)
+    return m, new_likelihood

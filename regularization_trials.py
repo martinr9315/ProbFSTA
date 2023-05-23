@@ -1,9 +1,7 @@
 from expectation_maximization import    (update_no_order_until, 
                                         likelihood_no_order, 
-                                        update_dirichlet, 
-                                        update_no_order_until_dirichlet, 
-                                        update_no_order_until_pen_L1,
-                                        update_no_order_until_pen_L2)
+                                        update_no_order_until_pen,
+                                        update_pen)
 from PFSTA import PFSTA
 import over_under
 import tree_generator
@@ -56,7 +54,7 @@ print ({'WH transitions': wh_count, 'NP transitions': np_count, 'C only': c_only
 p = PFSTA()
 over_under.initialize_random(p, 4, ['WH', 'V', 'X', 'NP'])
 st = time.time()
-new_p = update_no_order_until_pen_L2(p, bank, 0.1)
+new_p, likelihood = update_no_order_until_pen(p, bank, 0.1)
 new_p.print()
 new_p.pretty_print(assignment)
 et = time.time()
