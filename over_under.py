@@ -1,12 +1,41 @@
-from PFSTA import Node, TreeContext
+from PFSTA import PFSTA, Node, TreeContext
 import itertools
 import random
-
+import numpy as np
 #  ----------- PFSTA utilities -------------
 
 NO_ORDER = True
 ASSIGN_STATES = True   # assignments are hard coded for now
 RESOLVED_DEPENDENCY = True  # initial state is 1 (neutral state)
+
+def make_pfsta(values):
+    pfsta = PFSTA(q=[0,1,2,3,4])
+    state_seq = possible_lists_no_order(pfsta.q, 2)
+    state_seq.update(possible_lists_no_order(pfsta.q, 1))
+    to_normalize = [values[i:i+24] for i in range(0, 120, 24)]
+
+    normalized_values = []
+    for v in to_normalize:
+        v = np.abs(np.array(v))
+        total_sum = np.sum(v)
+        normalized = v / total_sum
+        normalized_values.append(normalized)
+    for q in pfsta.q:
+        j = 0 
+        if q == 1:
+            pfsta.i[q] = 1
+        else:
+            pfsta.i[q] = 0
+        for st in state_seq:  # transition probabilities
+            pfsta.delta[(q, '*', st)] = normalized_values[q][j]
+            j += 1
+        for t in ['WH', 'V', 'X', 'NP']:
+            pfsta.delta[(q, t, ())] = normalized_values[q][j]
+            j += 1
+    return pfsta
+
+def pfsta_values(pfsta):
+    return list(pfsta.delta.values())
 
 
 def initialize_random(pfsta, n, terminals):
@@ -66,6 +95,11 @@ def initialize_random(pfsta, n, terminals):
                 pfsta.delta[(q, 'X', ())] = 0.0
                 pfsta.delta[(q, 'V', ())] = 0.0
                 pfsta.delta[(q, 'NP', ())] = delta_probabilites[j]
+            elif q == 4:
+                pfsta.delta[(q, 'WH', ())] = 0.0
+                pfsta.delta[(q, 'X', ())] = 0.0
+                pfsta.delta[(q, 'V', ())] = 0.0
+                pfsta.delta[(q, 'NP', ())] = 0.0
         else:
             for t in terminals:  # terminal probabilities
                 pfsta.delta[(q, t, ())] = delta_probabilites[j]
@@ -512,3 +546,5 @@ def bottom_up(pfsta):
         bottom_up_val[state] = curr
     return bottom_up_val
     
+
+

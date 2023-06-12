@@ -114,6 +114,7 @@ def generate_bank(alphabet, depth, n):
 
 def generate_bank_from_pfsta(pfsta, n, max_depth=None):
     bank = []
+    # random.seed(5)
     for i in range(n):
         root = Node(state=random.choice(list(pfsta.i.keys())))
         t = generate_tree_from_pfsta(pfsta, root)

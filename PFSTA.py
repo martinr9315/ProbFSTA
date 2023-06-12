@@ -68,10 +68,10 @@ class PFSTA:
 
     def pretty_print(self, assignment):
         for i, k in self.i.items():
-            if k > .00001:
+            if k > .0001:
                 print('I:', assignment.get(i, '*'))
         for t, k in self.delta.items():
-            if k > .00001:
+            if k > .0001:
                 if len(t[2]) == 1:
                     print(assignment.get(t[0], '*'),
                           "->",

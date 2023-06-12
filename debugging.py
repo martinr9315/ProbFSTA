@@ -6,10 +6,14 @@ from expectation_maximization import (  likelihood_no_order,
                                         update_no_order_n,
                                         update_no_order_until)
 import tree_generator
+import random
 
-# p = PFSTA()
-# over_under.initialize_random(p, 4, ['Wh', 'V', 'X', 'NP'])
-# p.clean_print()
+vals = [random.random() for _ in range(120)]
+p = over_under.make_pfsta(vals)
+
+p.clean_print()
+
+
 
 goal_pfsta = PFSTA( [0, 1, 2, 3, 4],
                     {1: 1.0},
@@ -86,10 +90,9 @@ def print_all_overs(tree, non_zero):
 
 
 
-bank = tree_generator.read_from_file("treebanks/zero_trees.txt")
-for i, t in enumerate(bank):
-    print('---', i+1)
-    print(over_under.tree_prob_via_over_no_order(goal_pfsta_3, t))
-    print(over_under.tree_prob_via_under_no_order(goal_pfsta_3, t))
-
+# bank = tree_generator.read_from_file("treebanks/zero_trees.txt")
+# for i, t in enumerate(bank):
+#     print('---', i+1)
+#     print(over_under.tree_prob_via_over_no_order(goal_pfsta_3, t))
+#     print(over_under.tree_prob_via_under_no_order(goal_pfsta_3, t))
 

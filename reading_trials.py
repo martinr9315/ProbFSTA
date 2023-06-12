@@ -10,7 +10,7 @@ assignment = {0: 'L', 1: 'N', 2: 'V', 3: 'NP', 4: 'UL'}
 
 goal_pfsta = PFSTA( [0, 1, 2, 3, 4],
                     {1: 1.0},
-                    {(0, 'Wh', ()): 1.0,
+                    {(0, 'WH', ()): 1.0,
                     (1, '*', (0, 4)): 0.0688,
                     (1, '*', (1, 1)): 0.2982,
                     (1, '*', (2, 3)): 0.2523,
@@ -36,7 +36,7 @@ likelihood_times = []
 for i in range(num_pfstas):
     print('#', i+1)
     p = PFSTA()
-    over_under.initialize_random(p, 4, ['Wh', 'V', 'X', 'NP'])
+    over_under.initialize_random(p, 4, ['WH', 'V', 'X', 'NP'])
     p.clean_print()
     print('--')
     st = time.time()

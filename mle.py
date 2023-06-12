@@ -4,18 +4,18 @@ from over_under import (assign_addresses, print_annotated_tree, print_tree,
 from parsing import parse
 import os
 
-def pfsta_mle(treebank):
+def annotate(treebank):
     goal_pfsta = PFSTA(   [0, 1, 2, 3, 4],
                         {1: 1.0},
-                        {(0, 'WH', ()): 1,
-                         (1, '*', (0, 4)): 1,
-                         (1, '*', (1, 1)): 1,
-                         (1, '*', (2, 3)): 1,
-                         (1, 'X', ()): 1,
-                         (2, 'V', ()): 1,
-                         (3, 'NP', ()): 1,
-                         (4, '*', (2,)): 1,    
-                         (4, '*', (1, 4)): 1})
+                        {(0, 'WH', ()): 0,
+                         (1, '*', (0, 4)): 0,
+                         (1, '*', (1, 1)): 0,
+                         (1, '*', (2, 3)): 0,
+                         (1, 'X', ()): 0,
+                         (2, 'V', ()): 0,
+                         (3, 'NP', ()): 0,
+                         (4, '*', (2,)): 0,    
+                         (4, '*', (1, 4)): 0})
     for i, t in enumerate(treebank):
         t.set_address('')
         assign_addresses(t)
@@ -40,7 +40,9 @@ def pfsta_mle(treebank):
                     return 0
                 else:
                     goal_pfsta.delta[(annotation,'*', tuple(child_states))] += 1
+    return goal_pfsta
 
+def normalize(goal_pfsta):
     for q in goal_pfsta.q: # normalize
         total = 0
         for k, v in goal_pfsta.delta.items():
@@ -48,9 +50,14 @@ def pfsta_mle(treebank):
                 total += v
         for k, v in goal_pfsta.delta.items():
             if k[0] == q:
-                frac = v/total
-                goal_pfsta.delta[k] = frac
+                if total != 0:
+                    frac = v/total
+                    goal_pfsta.delta[k] = frac
     return goal_pfsta
+
+def pfsta_mle(treebank):
+    goal_pfsta = annotate(treebank)
+    return normalize(goal_pfsta)
 
 # testing 
 # tree1 = Node('*')

@@ -1,14 +1,20 @@
 from PFSTA import PFSTA
 import over_under
-from expectation_maximization import (  likelihood_no_order,
+from expectation_maximization import (  SoftCounts,
+                                        HiddenEvent,
+                                        LAMBDA,
+                                        likelihood_no_order,
                                         likelihood_no_order_sst,
                                         update_no_order_until,
+                                        likelihood_counts,
                                         update_n,
                                         update_no_order_until_pen,
-                                        update_no_order_until_sst)
+                                        update_no_order_until_sst,
+                                        entropy_penalty,
+                                        L2_reward)
 import tree_generator
 import time
-from mle import pfsta_mle
+from mle import pfsta_mle, annotate
 from parsing import split_bank
 from collections import Counter
 
@@ -130,9 +136,30 @@ for t in bank:
     d += len(over_under.depth(t))
 print('Avg depth:', d/len(bank))
 
+print('---')
 mle = pfsta_mle(bank)
 print('MLE PFSTA:')
 mle.clean_print()
+
+# annotate trees & use counts to calculate likelihood (just much faster than over/under)
+counts_pfsta = annotate(bank)
+soft_counts = SoftCounts()
+for state in counts_pfsta.q:
+    h_event = HiddenEvent()
+    h_event.set_start(state)
+    if state == 1:
+        soft_counts.hidden_events[h_event] = len(bank)
+    else:
+        soft_counts.hidden_events[h_event] = 0
+for t, v in counts_pfsta.delta.items():
+    h_event = HiddenEvent()
+    h_event.set_transition(t[0], t[1], t[2])
+    soft_counts.hidden_events[h_event] = v
+
+# mle_opt = likelihood_counts(mle, soft_counts)-LAMBDA*entropy_penalty(mle)
+mle_opt = likelihood_counts(mle, soft_counts)+LAMBDA*L2_reward(mle)
+print('MLE likelihood:', mle_opt)
+# print('check match ^:', likelihood_no_order(mle, bank)-LAMBDA*entropy_penalty(mle))
 
 print('---')
 print('Learning...')
@@ -148,7 +175,7 @@ for i in range(num_pfstas):
     p = PFSTA()
     over_under.initialize_random(p, 4, ['WH', 'V', 'X', 'NP'])
     # p.print()
-    # print('--')
+    print('--')
     st = time.time()
     # new_p = update_no_order_until(p, bank, 0.1) # REG
     # new_p = update_no_order_until_sst(p, bank, 0.1) # SST
@@ -164,22 +191,21 @@ for i in range(num_pfstas):
         index = i
         highest = new_p_likelihood
     new_pfstas.append(new_p)
-    new_p.pretty_print(assignment)
+    new_p.clean_print()
+    # new_p.pretty_print(assignment)
     print('------')
 
 best = new_pfstas[index]
 
-print("Best likelihood (from ",num_pfstas, " initializations):")
+# print("Best likelihood (from ",num_pfstas, " initializations):")
 # print(likelihood_no_order(best, bank)) # REG
 # print(likelihood_no_order_sst(best, bank)) # SST
-# print(likelihood_counts(best, bank)) # PEN
 
-
+print(index+1)
 best.clean_print()
 print("CFG form:")
 best.pretty_print(assignment)
 
-# mle_likelihood = likelihood_no_order(mle, bank)
-# print('Likelihood with MLE PFSTA:', mle_likelihood, '\n')
+print('obj:', highest)
+print('MLE obj:', mle_opt)
 
-# print("\nUpdate until .01 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")
