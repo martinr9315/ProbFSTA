@@ -134,7 +134,7 @@ def to_string(e):
 ROOT = "ROOT"
 
 # Reads PTB trees from a file, and returns a list of trees
-def get_trees(f):
+def get_trees(f): ## CALL THIS FUNCTION ON FILE OF TREES
 
     trees = []
     errors = 0
@@ -144,10 +144,10 @@ def get_trees(f):
             trees.append(t)
         except:
             errors = errors + 1
-            print("WARNING: Ignoring ill-formed tree: %s" % re.sub("\s+", " ", c))
+            # print("WARNING: Ignoring ill-formed tree: %s" % re.sub("\s+", " ", c))
 
-    if errors > 0:
-        print("WARNING: Ignored %d ill-formed trees" % errors)
+    # if errors > 0:
+    #     print("WARNING: Ignored %d ill-formed trees" % errors)
 
     return trees
 
@@ -183,8 +183,8 @@ def get_chunks(f):
                 current_chunk = current_chunk + c
         c = f.read(1)
 
-    if (current_chunk is not None) or (depth != 0):
-        print("WARNING: Treebank input ended with an incomplete parse tree")
+    # if (current_chunk is not None) or (depth != 0):
+    #     print("WARNING: Treebank input ended with an incomplete parse tree")
 
     return chunks
 

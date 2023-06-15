@@ -1,9 +1,14 @@
 from over_under import (get_address_list, get_context, get_node,
-                        possible_lists, possible_lists_no_order, prob_over, prob_under,tree_prob_via_under_no_order,
+                        possible_lists, possible_lists_no_order, prob_over,
+                        prob_under, tree_prob_via_under_no_order,
                         prob_under_no_order, prob_over_no_order,
-                        tree_prob_via_under, order, clear_memos)
+                        tree_prob_via_under, order, make_pfsta, pfsta_values,
+                        initialize_random)
 from PFSTA import PFSTA
-
+import numpy as np
+import random, time
+from scipy.optimize import minimize
+from scipy.stats import entropy
 
 class HiddenEvent:
     state = None
@@ -141,7 +146,6 @@ def expectations_from_observation_no_order(pfsta, observed_events):
         soft_start_counts.hidden_events[h_event] = (pfsta.start_prob(state) * prob_under_no_order(pfsta, observed_events.start_event, state))
     normalize(soft_start_counts.hidden_events)
     total_soft_counts.append(soft_start_counts)
-
     # for transitions:
     for t_event in observed_events.transition_events:
         t_soft_count = SoftCounts()
@@ -239,7 +243,6 @@ def update(pfsta, trees):
     pfsta.unders.clear()
     return new_pfsta
 
-
 def update_n(pfsta, trees, n):
     m = pfsta
     for _ in range(n):
@@ -249,7 +252,9 @@ def update_n(pfsta, trees, n):
 
 def update_no_order(pfsta, trees):
     expected_counts = expectations_from_corpus_no_order(pfsta, trees)
+    # print("  finished E step")
     new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
+    # print("  finished M step")
     return new_pfsta
 
 
@@ -257,6 +262,18 @@ def update_no_order_n(pfsta, trees, n):
     m = pfsta
     for _ in range(n):
         m = update_no_order(m, trees)
+    return m
+
+
+def update_no_order_until(pfsta, trees, e):
+    m = pfsta
+    old_likelihood = 0
+    new_likelihood = likelihood_no_order(pfsta, trees)
+    while abs(old_likelihood-new_likelihood) > e:
+        m = update_no_order(m, trees)
+        old_likelihood = new_likelihood
+        new_likelihood = likelihood_no_order(m, trees)
+        print('\tthis likelihood:', new_likelihood)
     return m
 
 
@@ -268,7 +285,178 @@ def likelihood(pfsta, trees):
 
 
 def likelihood_no_order(pfsta, trees):
-    product = 1
+    product = 0
     for t in trees:
-        product *= tree_prob_via_under_no_order(pfsta, t)
+        prob = tree_prob_via_under_no_order(pfsta, t)
+        if prob != 0:
+            product += np.log(prob)
+        if prob == 0:
+            product += float('-inf')
     return product
+
+######## with regularization
+
+
+def likelihood_counts(pfsta, counts):
+    sum = 0
+    for hidden_event, count in counts.hidden_events.items():
+        if hidden_event.start:
+            prob = pfsta.start_prob(hidden_event.state)
+            if prob:
+                sum += count*np.log(prob)
+        else:
+            prob = pfsta.transition_prob((hidden_event.state, 
+                                          hidden_event.label, 
+                                          hidden_event.children_states))
+            if prob:
+                sum += count*np.log(prob)
+            elif count !=0: 
+                sum += -10000000 ## TODO: clean
+    return sum
+
+def rule_num_penalty(pfsta):
+    penalty = sum(1 for value in pfsta.delta.values() if value > .00001)
+    return penalty
+
+def L2_reward(pfsta):
+    penalty = [0]*len(pfsta.q)
+    for t, p in pfsta.delta.items():
+        penalty[t[0]] += p**2
+    return sum(penalty)
+
+def entropy_penalty_1(pfsta):
+    pk = np.array(pfsta_values(pfsta))
+    H = entropy(pk)
+    return H
+
+def entropy_penalty(pfsta):
+    entropy_by_state = [[] for _ in range(len(pfsta.q))]
+    for t, prob in pfsta.delta.items():
+        entropy_by_state[t[0]].append(prob)
+    H = 0
+    for q in entropy_by_state:
+        H += entropy(np.array(q))
+    return H
+
+
+# TODO: adjust this global variable to adjust regularization lambda
+LAMBDA = 25
+
+def obj(pfsta, counts):
+    # TODO: uncomment desired objective function 
+    # return -1*(likelihood_counts(pfsta, counts)+LAMBDA*L2_reward(pfsta))
+    # return -1*(likelihood_counts(pfsta, counts)-entropy_penalty_1(pfsta))
+    return -1*(likelihood_counts(pfsta, counts)-LAMBDA*entropy_penalty(pfsta))
+    # return -1*(likelihood_counts(pfsta, counts)-LAMBDA*rule_num_penalty(pfsta))
+
+
+
+def maximize_from_counts_pen(soft_counts):
+    objective_function = lambda v: obj(make_pfsta(v), soft_counts)
+    p = PFSTA()
+    initialize_random(p, 4, ['WH', 'V', 'X', 'NP'])
+    guess = pfsta_values(p)
+    st = time.time()
+    result = minimize(objective_function, guess, method='Powell')
+    et = time.time()
+    print('\tmaximization time: %.2fs' % (et-st))
+    optimized_x = result.x
+    optimized_value = result.fun
+    # print('opt',optimized_value)
+    new_p = make_pfsta(result.x)
+    # new_p.clean_print()
+    return new_p
+
+# squared soft threshold
+THRESHOLD = .01
+
+def squared_soft_threshold(d):
+    scaled_d = {}
+    for k, v in d.items():
+        if v != 0:
+            scaled_d[k] = np.power(v - THRESHOLD, 2)
+    return scaled_d
+
+def estimate_from_counts_sst(states, soft_counts):
+    start_dist = {}
+    step_dist = {}
+    for hidden_event, prob in soft_counts.hidden_events.items():
+        if hidden_event.start:
+            start_dist[hidden_event.state] = prob
+        else:
+            dist_by_state = step_dist.get(hidden_event.state, {})
+            dist_by_state[(hidden_event.state, hidden_event.label, 
+                           hidden_event.children_states)] = prob
+            step_dist[hidden_event.state] = dist_by_state
+    flattened_step_dist = {}
+    for dist in step_dist.values():
+        scaled = squared_soft_threshold(dist)
+        normalize(scaled)
+        for k, v in scaled.items():
+            flattened_step_dist[k] = v
+    normalize(start_dist)
+    new_pfsta = PFSTA(states, start_dist, flattened_step_dist)
+    return new_pfsta
+
+def update_sst(pfsta, trees):
+    expected_counts = expectations_from_corpus_no_order(pfsta, trees)
+    new_pfsta = estimate_from_counts_sst(pfsta.q, expected_counts)
+    pfsta.overs.clear()
+    pfsta.unders.clear()
+    return new_pfsta
+
+def update_no_order_until_sst(pfsta, trees, e):
+    m = pfsta
+    old_likelihood = 0
+    new_likelihood = likelihood_no_order_sst(pfsta, trees)
+    while abs(old_likelihood-new_likelihood) > e:
+        m = update_sst(m, trees)
+        old_likelihood = new_likelihood
+        new_likelihood = likelihood_no_order_sst(m, trees)
+        print('\tsst likelihood:', new_likelihood)
+    return m
+
+def likelihood_no_order_sst(pfsta, trees):
+    product = 0
+    for t in trees:
+        prob = tree_prob_via_under_no_order(pfsta, t)
+        if prob != 0:
+            product += np.log(prob)
+        if prob == 0:
+            product += float('-inf')
+    penalty = 0
+    # for k,v in pfsta.delta.items():
+    #     if v!=0:
+    #         penalty += np.power(np.maximum(v - THRESHOLD, 0.0000001), 2)
+    return product - penalty
+
+
+def update_pen(pfsta, trees):
+    expected_counts = expectations_from_corpus_no_order(pfsta, trees)
+    new_pfsta = maximize_from_counts_pen(expected_counts)
+    # TODO: uncomment desired regularization:
+    # reward = L2_reward(pfsta)
+    # penalty = entropy_penalty_1(pfsta)
+    penalty = entropy_penalty(pfsta)
+    # penalty = rule_num_penalty(pfsta)
+    # TODO: uncomment corresponding reward/penalty objective function
+    # obj = likelihood_no_order(new_pfsta, trees)+LAMBDA*reward
+    obj = likelihood_no_order(new_pfsta, trees)-LAMBDA*penalty
+    print('o:', obj, '\t\tl:',likelihood_no_order(new_pfsta, trees))
+    # TODO: uncomment corresponding reward/penalty print statement
+    # print('\treward:', reward )
+    print('\t penalty:', penalty )
+    pfsta.overs.clear()
+    pfsta.unders.clear()
+    return new_pfsta, obj
+
+def update_no_order_until_pen(pfsta, trees, e):
+    print('lambda:', LAMBDA)
+    m = pfsta
+    old_likelihood = 1
+    new_likelihood = 0
+    while abs(old_likelihood-new_likelihood) > e:
+        old_likelihood = new_likelihood
+        m, new_likelihood = update_pen(m, trees)
+        # print('\tlikelihood:', new_likelihood)
+    return m, new_likelihood

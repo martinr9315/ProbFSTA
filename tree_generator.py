@@ -1,11 +1,6 @@
 from PFSTA import Node
 import random
 import over_under
-import copy
-
-# done:
-#   A and B are not siblings
-#   global variables for n-nary, A c-commands B (only one A/B), A-B siblings
 
 N_ARY = 2  # max children generated node can have
 C_COMMAND = True  # enforce A c-commands B (only one A/B)
@@ -14,7 +9,7 @@ NOT_SIBLINGS = .1  # enforce A-B are allowed to be siblings only x% of the time
 
 def read_from_file(file):
     f = open(file, "r")
-    str = (f.read()).split('--')
+    str = filter(lambda x: x != '\n', (f.read()).split('--'))
     trees = []
     for s in str:
         if s:
@@ -24,10 +19,14 @@ def read_from_file(file):
     return trees
 
 
+def a_len(s):
+    return len(s.split(":")[0])
+
+
 def read_from_addresses(s):
     s = s.split()
-    s = sorted(s, key=len)
-    tree = Node()
+    s = sorted(s, key=lambda x: a_len(x))
+    tree = Node(s[0].split(':')[1])
     tree.set_address('')
     for a in s[1:]:
         over_under.assign_addresses(tree)
@@ -113,42 +112,37 @@ def generate_bank(alphabet, depth, n):
     return bank
 
 
- #------------Changing geometry------------
-def gap_rotation(bank):
-    tree = copy.deepcopy(bank)
-    for i in tree:
-        addresses = over_under.get_address_list(i)
-        i.set_address('')
-        for a in addresses:
-            if over_under.get_label(i, a) == 'B':
-                tr = Node()
-                tr.label = 'V'
-                node = over_under.get_node(i, a)
-                node.star_label()
-                node.children = [tr]
-        over_under.assign_addresses(i)
-    return tree
-                
-def trans_rotation(bank):
-    tree = copy.deepcopy(bank)
-    for i in tree:
-        addresses = over_under.get_address_list(i)
-        i.set_address('')
-        for a in addresses:
-            if over_under.get_label(i, a) == 'A':
-                node = over_under.get_node(i, a)
-                node.label = 'C'
-            elif over_under.get_label(i, a) == 'B':
-                tr = Node()
-                tr.label = 'V'
-                tr1 = Node()
-                tr1.label = 'NP'
-                node = over_under.get_node(i, a)
-                node.star_label()
-                node.children = [tr, tr1]
-        over_under.assign_addresses(i)
-    return tree 
-                
+def generate_bank_from_pfsta(pfsta, n, max_depth=None):
+    bank = []
+    # random.seed(5)
+    for i in range(n):
+        root = Node(state=random.choice(list(pfsta.i.keys())))
+        t = generate_tree_from_pfsta(pfsta, root)
+        t.set_address('')
+        over_under.assign_addresses(t)
+        d = over_under.depth(t)
+        while max_depth and (not d or len(d) > max_depth):
+            t = generate_tree_from_pfsta(pfsta, root)
+            t.set_address('')
+            over_under.assign_addresses(t)
+            d = over_under.depth(t)
+        bank.append(t)
+    return bank
 
 
-    
+def generate_tree_from_pfsta(pfsta, node):
+    produce_transition(pfsta, node)
+    for c in node.children:
+        generate_tree_from_pfsta(pfsta, c)
+    return node
+
+
+def produce_transition(pfsta, node):
+    possible_transitions = pfsta.possible_transitions(node.state)
+    probs = [v for k, v in possible_transitions.items()]
+    transition = random.choices(list(possible_transitions.keys()), weights=probs, k=1)[0]
+    children = []
+    node.label = transition[1]
+    for c in transition[2]:
+        children.append(Node(state=c))
+    node.children = children

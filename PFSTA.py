@@ -8,6 +8,7 @@ class PFSTA:
         self.delta = delta  # delta = {transition: prob}
         self.overs = {}
         self.unders = {}
+        self.order_transitions()  # only for unordered PFSTAs
 
     # ------ Grammar utilities ---------
     def all_states(self):
@@ -19,6 +20,30 @@ class PFSTA:
     def transition_prob(self, transition):
         return self.delta.get(transition, 0.0)
 
+    def order_transitions(self):
+        ordered_delta = {}
+        for t, v in self.delta.items():
+            if len(t[2]) > 0:
+                sorted_children = tuple(sorted(t[2]))
+                sorted_transition = (t[0], t[1], sorted_children)
+                t = sorted_transition
+            ordered_delta.update({t: v})
+        self.delta = ordered_delta
+
+############
+    def possible_transitions(self, state):
+        return {t: self.transition_prob(t) for t in self.delta if t[0] == state}
+
+    def get_terminals(self):
+        return [t[1] for t in self.delta if len(t[2]) == 0]
+    
+    def get_state(self, output):
+        for t in self.delta.keys():
+            if output[0] == t[1] and output[1] == t[2]:
+                return t[0]
+        
+############
+
     def get_under(self, node, state):
         return self.unders.get((node, state))
 
@@ -28,47 +53,87 @@ class PFSTA:
     def print(self):
         print('Q:', self.q)
         print('I:', self.i)
-        print('Delta:', self.delta)
+        print('Delta:')
+        for t, k in self.delta.items():
+                print(str(t)+': '+str(round(k, 6)))
 
     def clean_print(self):
         print('Q:', self.q)
-        print('I:', self.i)
+        cleaned_i = {t: k for t, k in self.i.items() if k > .00001}
+        print('I:', cleaned_i)
         print('Delta:')
         for t, k in self.delta.items():
             if k > .00001:
-                print(str(t)+':'+str(round(k, 4)))
+                print(str(t)+': '+str(round(k, 4)))
+
+    def pretty_print(self, assignment):
+        for i, k in self.i.items():
+            if k > .0001:
+                print('I:', assignment.get(i, '*'))
+        for t, k in self.delta.items():
+            if k > .0001:
+                if len(t[2]) == 1:
+                    print(assignment.get(t[0], '*'),
+                          "->",
+                          assignment.get(t[2][0], '*'))
+                elif len(t[2]) == 2:
+                    print(assignment.get(t[0], '*'),
+                          "->",
+                          assignment.get(t[2][0], '*'),
+                          assignment.get(t[2][1], '*'))
+                else:
+                    print(assignment.get(t[0], '*'),
+                          "->", t[1])
     # ------------------------------------
 
 
 class Node:
-    def __init__(self, label="*"):
-        self.children = []
+    def __init__(self, label="*", state=None, children=[]):
+        self.children = children
         self.address = None
         self.label = label
         self.context = None
+        self.state = state  # only for use in annotated trees
 
     def set_address(self, address):
         self.address = address
 
+    def get_address(self):
+        return self.address
+
     def set_label(self, label):
         self.label = label
+    
+    def get_label(self):
+        return self.label
 
     def star_label(self):
         self.label = '*'
+    
+    def set_state(self, state):
+        self.state = state
+    
+    def get_state(self):
+        return self.state
 
     def clear_tree_memos(self):
         self.under = {}
         self.under_no_order = {}
         if self.context:
-            print('clear over')
             self.context.over = {}
             self.context.over_no_order = {}
 
     def print(self):
         print("Node "+self.label, end=' ')
 
-    def print_address(self):
+    def annotated_print(self):
+        print(self.address+":"+str(self.state)+', '+self.label)
+
+    def print_address(self, f=None):
+        if f is not None:
+            print(self.address+":"+self.label, file=f)
         print(self.address+":"+self.label)
+        # return (self.address+":"+self.label)
 
 
 class TreeContext:
