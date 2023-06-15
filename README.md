@@ -1,4 +1,4 @@
-### Ling 198A: Modelling Learning of Long Distance Dependencies Using PFSTA Expectation Maximization
+### Ling 198B: Modelling Learning of Long Distance Dependencies Using PFSTA Expectation Maximization
 
 
 #### CHILDES Trials
@@ -9,8 +9,12 @@ The parsing of the CHILDES database occurs in trees.py and parsing.py. The parse
 ##### Learning
 To run the EM learner on trees from the CHILDES database, run ```python learn.py```. The global variables NUM_PFSTAS, NUM_TREES, TIME_LIMIT, set the number of randomly initialized PFSTAs, the number of trees to randomly sample from CHILDES, and the computation time limit in seconds, respectively.
 
+##### Regularization
+There are implementation of multiple types of regularization within  ```expectation_maximization.py```. Currently, ```learn.py``` and ```run_trials.py``` both use a statewise entropy penalty with a factor of 25 as a regularizer. The regularization factor can be adjusted by adjusting the global variable ```LAMBDA``` and the type of regularizer can be adjusted by following the ```TODO``` comments, both in ```expectation_maximization.py```.
+
+
 ##### Random Starting PFSTA
-The EM algorithm requires a random PFSTA from which to begin iteration. Currently, the random starting PFSTA (and subsequent EM algorithm) default to being **unorded**, having **assigned terminal states** (i.e., the 0 state always corresponds to the 'Wh' terminal), and an **assigned initial state** (equivalent to a resolved dependency since state 1, the neutral state, is the assigned initial state). 
+The EM algorithm requires a random PFSTA from which to begin iteration. Currently, the random starting PFSTA (and subsequent EM algorithm) default to being **unorded**, having **assigned terminal states** (i.e., the 0 state always corresponds to the 'WH' terminal), and an **assigned initial state** (equivalent to a resolved dependency since state 1, the neutral state, is the assigned initial state). 
 
 As of now, these are modifiable via the global variables in ```over_under.py```.
 
@@ -19,7 +23,7 @@ Before testing the learner on the CHILDES database, it was tested by running tri
 
 
 ##### Running Trials
-To run a trial, run: ```python3 run_trials.py``` and follow the prompts. This uses the treebank generation described below to produce a treebnak for leanring.  The various randomly initialized PFSTAs are displayed, and then learned PFSTA and corresponding CFG that produces the best likelihood from 50 random initializations.
+To run a trial, run: ```python3 run_trials.py``` and follow the prompts. This uses the treebank generation described below to produce a treebnak for learning.  The various randomly initialized PFSTAs are displayed, and then learned PFSTA and corresponding CFG that produces the best likelihood from 50 random initializations.
 
 ##### Tree Bank Generation
 A tree bank can be generated from a goal Probalistic Finite State Tree Automata, the PFSTA which we want the learner to learn.

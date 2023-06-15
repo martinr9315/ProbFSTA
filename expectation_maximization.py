@@ -338,9 +338,12 @@ def entropy_penalty(pfsta):
         H += entropy(np.array(q))
     return H
 
+
+# TODO: adjust this global variable to adjust regularization lambda
 LAMBDA = 25
 
 def obj(pfsta, counts):
+    # TODO: uncomment desired objective function 
     # return -1*(likelihood_counts(pfsta, counts)+LAMBDA*L2_reward(pfsta))
     # return -1*(likelihood_counts(pfsta, counts)-entropy_penalty_1(pfsta))
     return -1*(likelihood_counts(pfsta, counts)-LAMBDA*entropy_penalty(pfsta))
@@ -427,20 +430,22 @@ def likelihood_no_order_sst(pfsta, trees):
     #         penalty += np.power(np.maximum(v - THRESHOLD, 0.0000001), 2)
     return product - penalty
 
-# penalization
+
 def update_pen(pfsta, trees):
     expected_counts = expectations_from_corpus_no_order(pfsta, trees)
-    # new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
     new_pfsta = maximize_from_counts_pen(expected_counts)
+    # TODO: uncomment desired regularization:
     # reward = L2_reward(pfsta)
     # penalty = entropy_penalty_1(pfsta)
     penalty = entropy_penalty(pfsta)
     # penalty = rule_num_penalty(pfsta)
+    # TODO: uncomment corresponding reward/penalty objective function
     # obj = likelihood_no_order(new_pfsta, trees)+LAMBDA*reward
     obj = likelihood_no_order(new_pfsta, trees)-LAMBDA*penalty
     print('o:', obj, '\t\tl:',likelihood_no_order(new_pfsta, trees))
+    # TODO: uncomment corresponding reward/penalty print statement
     # print('\treward:', reward )
-    print('\t entropy penalty:', penalty )
+    print('\t penalty:', penalty )
     pfsta.overs.clear()
     pfsta.unders.clear()
     return new_pfsta, obj
