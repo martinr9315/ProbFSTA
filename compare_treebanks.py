@@ -96,10 +96,10 @@ def count_transitions(bank):
 # number of all C trees
 # number of both trees
 
-size = [100, 200]
+size = [50, 100]
 
 for n in size:
-    bank = generate_bank_from_pfsta(goal_pfsta_4, n, 10)
+    bank = generate_bank_from_pfsta(goal_pfsta_3, n, 10)
     split_bank_n = split_bank(bank)
     print('\n', n, 'generated trees')
     print_stats(n, split_bank_n)
@@ -123,13 +123,18 @@ for filename in os.listdir(directory):
     if os.path.isfile(f):
         filenames.append(f)
 filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
-CHILDES_bank = parse(filenames)
+full_bank = parse(filenames)
+split = split_bank(full_bank)
+non_x = split['wh']+split['v_np']
+# print(len(non_x))
+shallow_bank = depth_limit(non_x, 6)
+# print(len(shallow_bank))
 for n in size:
-    bank = random.sample(CHILDES_bank, n)
+    bank = random.sample(shallow_bank, n)
     split_bank_n = split_bank(bank)
     print('\n', n, 'CHILDES trees')
     print_stats(n, split_bank_n)
-    print(count_transitions(bank))
+    # print(count_transitions(bank))
     print('\t', 'avg WH depth: %.2f' % avg_depth(split_bank_n['wh']))
     print('\t', 'avg depth: %.2f' % avg_depth(bank))
 

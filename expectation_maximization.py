@@ -314,6 +314,9 @@ def likelihood_counts(pfsta, counts):
                 sum += -10000000 ## TODO: clean
     return sum
 
+def rule_num_penalty(pfsta):
+    penalty = sum(1 for value in pfsta.delta.values() if value > .00001)
+    return penalty
 
 def L2_reward(pfsta):
     penalty = [0]*len(pfsta.q)
@@ -335,12 +338,14 @@ def entropy_penalty(pfsta):
         H += entropy(np.array(q))
     return H
 
-LAMBDA = 5
+LAMBDA = 25
 
 def obj(pfsta, counts):
-    return -1*(likelihood_counts(pfsta, counts)+LAMBDA*L2_reward(pfsta))
+    # return -1*(likelihood_counts(pfsta, counts)+LAMBDA*L2_reward(pfsta))
     # return -1*(likelihood_counts(pfsta, counts)-entropy_penalty_1(pfsta))
-    # return -1*(likelihood_counts(pfsta, counts)-LAMBDA*entropy_penalty(pfsta))
+    return -1*(likelihood_counts(pfsta, counts)-LAMBDA*entropy_penalty(pfsta))
+    # return -1*(likelihood_counts(pfsta, counts)-LAMBDA*rule_num_penalty(pfsta))
+
 
 
 def maximize_from_counts_pen(soft_counts):
@@ -427,14 +432,15 @@ def update_pen(pfsta, trees):
     expected_counts = expectations_from_corpus_no_order(pfsta, trees)
     # new_pfsta = estimate_from_counts(pfsta.q, expected_counts)
     new_pfsta = maximize_from_counts_pen(expected_counts)
-    reward = L2_reward(pfsta)
+    # reward = L2_reward(pfsta)
     # penalty = entropy_penalty_1(pfsta)
-    # penalty = entropy_penalty(pfsta)
-    obj = likelihood_no_order(new_pfsta, trees)+reward
-    # obj = likelihood_no_order(new_pfsta, trees)-penalty
+    penalty = entropy_penalty(pfsta)
+    # penalty = rule_num_penalty(pfsta)
+    # obj = likelihood_no_order(new_pfsta, trees)+LAMBDA*reward
+    obj = likelihood_no_order(new_pfsta, trees)-LAMBDA*penalty
     print('o:', obj, '\t\tl:',likelihood_no_order(new_pfsta, trees))
-    print('\treward:', reward )
-    # print('\tpenalty (2):', penalty )
+    # print('\treward:', reward )
+    print('\t entropy penalty:', penalty )
     pfsta.overs.clear()
     pfsta.unders.clear()
     return new_pfsta, obj

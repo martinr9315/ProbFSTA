@@ -2,11 +2,9 @@ from PFSTA import PFSTA
 import over_under
 from expectation_maximization import (  likelihood_no_order,
                                         likelihood_no_order_sst,
-                                        likelihood_no_order_pen_L1,
                                         update_no_order_until,
-                                        update_no_order_until_pen_L1,
                                         update_no_order_until_sst,
-                                        update_no_order_until_dirichlet,
+                                        update_no_order_until_pen,
                                         update_n)
 from parsing import parse, split_bank, depth_limit, timeout_handler
 import time, signal, random, os
@@ -79,7 +77,7 @@ for i in range(NUM_PFSTAS):
     try:
         # new_p = update_no_order_until(p, bank, 0.01) # REG
         # new_p = update_no_order_until_sst(p, bank, 0.1) # SST
-        new_p = update_no_order_until_pen_L1(p, bank, 0.1) # L1
+        new_p = update_no_order_until_pen(p, bank, 0.1) # L1
 
     except TimeoutError as e:
         print(e)
@@ -90,7 +88,7 @@ for i in range(NUM_PFSTAS):
         update_n_times.append(et-st)
         # new_p_likelihood = likelihood_no_order(new_p, bank) # REG
         # new_p_likelihood = likelihood_no_order_sst(new_p, bank) # SST
-        new_p_likelihood = likelihood_no_order_pen_L1(new_p, bank) # L1
+        new_p_likelihood = likelihood_no_order(new_p, bank) #
 
         if new_p_likelihood > highest:
             index = i
@@ -108,7 +106,7 @@ print(NUM_PFSTAS, "initializations,", NUM_TREES, "trees, max depth", MAX_DEPTH)
 print("Best likelihood:")
 # print(likelihood_no_order(best, bank)) # REG
 # print(likelihood_no_order_sst(best, bank)) # SST
-print(likelihood_no_order_pen_L1(best, bank)) # L1
+print(likelihood_no_order(best, bank)) 
 
 
 best.clean_print()
@@ -117,7 +115,7 @@ best.pretty_print(assignment)
 
 # likelihood = likelihood_no_order(p, bank) # REG
 # likelihood = likelihood_no_order_sst(p, bank) # SST
-likelihood = likelihood_no_order_pen_L1(p, bank) # L1
+likelihood = likelihood_no_order(p, bank) 
 
 
 print('likelihood with mle pfsta:', likelihood, '\n')

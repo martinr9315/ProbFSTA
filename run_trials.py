@@ -11,7 +11,8 @@ from expectation_maximization import (  SoftCounts,
                                         update_no_order_until_pen,
                                         update_no_order_until_sst,
                                         entropy_penalty,
-                                        L2_reward)
+                                        L2_reward,
+                                        rule_num_penalty)
 import tree_generator
 import time
 from mle import pfsta_mle, annotate
@@ -156,10 +157,15 @@ for t, v in counts_pfsta.delta.items():
     h_event.set_transition(t[0], t[1], t[2])
     soft_counts.hidden_events[h_event] = v
 
-# mle_opt = likelihood_counts(mle, soft_counts)-LAMBDA*entropy_penalty(mle)
-mle_opt = likelihood_counts(mle, soft_counts)+LAMBDA*L2_reward(mle)
-print('MLE likelihood:', mle_opt)
+mle_opt = likelihood_counts(mle, soft_counts)-LAMBDA*entropy_penalty(mle)
+# mle_opt = likelihood_counts(mle, soft_counts)+LAMBDA*L2_reward(mle)
+# mle_opt = likelihood_counts(mle, soft_counts)-LAMBDA*rule_num_penalty(mle)
+
+print('MLE obj:', mle_opt)
+print('entropy: ', entropy_penalty(mle))
+print('likelihood:',likelihood_counts(mle, soft_counts))
 # print('check match ^:', likelihood_no_order(mle, bank)-LAMBDA*entropy_penalty(mle))
+
 
 print('---')
 print('Learning...')
