@@ -26,22 +26,21 @@ Before testing the learner on the CHILDES database, it was tested by running tri
 To run a trial, run: ```python3 run_trials.py``` and follow the prompts. This uses the treebank generation described below to produce a treebnak for learning.  The various randomly initialized PFSTAs are displayed, and then learned PFSTA and corresponding CFG that produces the best likelihood from 50 random initializations.
 
 ##### Tree Bank Generation
-A tree bank can be generated from a goal Probalistic Finite State Tree Automata, the PFSTA which we want the learner to learn.
-Currently, the goal PFSTA is set to be: 
-
+A tree bank can be generated from a  Probalistic Finite State Tree Automata, the PFSTA which we want the learner to learn.
+Currently, the generating PFSTA is the MLE PFSTA calculated from annotating the CHILDES treebank: 
 ```
     Q: [0, 1, 2, 3, 4]
     I: {0: 0.0, 1: 1.0, 2: 0.0, 3: 0.0, 4: 0.0}
     Delta:
     (0, 'WH', ()): 1.0,
-    (1, '*', (0, 4)): 0.097,
-    (1, '*', (1, 1)): 0.2239,
-    (1, '*', (2, 3)): 0.2612,
-    (1, 'X', ()): 0.4179,
+    (1, '*', (0, 4)): 0.0224,
+    (1, '*', (1, 1)): 0.3994,
+    (1, '*', (2, 3)): 0.1534,
+    (1, 'X', ()): 0.4249,
     (2, 'V', ()): 1.0,
     (3, 'NP', ()): 1.0,
-    (4, '*', (2, )): 0.7222,
-    (4, '*', (1, 4)): 0.2778                         
+    (4, '*', (2,)): 0.3684,
+    (4, '*', (1, 4)): 0.6316                                 
 ```
 To exclusively generate a tree bank, run: ```python3 generate_trees.py``` (this is not necessary if running trials, as the treebank is automatically generated) and follow the prompts to specify number of trees and output location. 
 
