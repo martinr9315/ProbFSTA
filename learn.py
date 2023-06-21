@@ -12,7 +12,7 @@ from mle import pfsta_mle
 
 
 NUM_PFSTAS = 10             # number of randomly initialized PFSTAs
-NUM_TREES = 100              # number of trees to randomly sample from CHILDES
+NUM_TREES = 500              # number of trees to randomly sample from CHILDES
 TIME_LIMIT = 1500            # set the time limit in seconds
 MAX_DEPTH = 6
 WH_DIST = .3                # set proportion of wh-trees
@@ -28,6 +28,7 @@ for filename in os.listdir(directory):
         filenames.append(f)
 filenames.remove('CHILDESTreebank/hslld-hv1-er/.DS_Store')
 full_bank = parse(filenames)
+
 # splitted_bank = split_bank(full_bank)
 # non_x = split_bank['wh']+split_bank['v_np']
 # wh_bank = random.sample(depth_limit(split_bank['wh'], MAX_DEPTH), 15)
@@ -39,6 +40,7 @@ full_bank = parse(filenames)
 
 # bank = random.sample(depth_limit(splitted_bank['wh'], MAX_DEPTH), wh_n) + random.sample(depth_limit(splitted_bank['v_np'], MAX_DEPTH), vnp_n)
 # bank = wh_bank+rest
+
 bank = random.sample(depth_limit(full_bank, MAX_DEPTH), NUM_TREES)
 
 for t in bank:
@@ -68,8 +70,6 @@ for i in range(NUM_PFSTAS):
     print('#', i+1)
     p = PFSTA()
     over_under.initialize_random(p, 4, ['WH', 'V', 'X', 'NP'])
-    # p.print()
-    # print('--')
     st = time.time()
 
     signal.signal(signal.SIGALRM, timeout_handler)
@@ -77,7 +77,7 @@ for i in range(NUM_PFSTAS):
     try:
         # new_p = update_no_order_until(p, bank, 0.01) # REG
         # new_p = update_no_order_until_sst(p, bank, 0.1) # SST
-        new_p = update_no_order_until_pen(p, bank, 0.1) # L1
+        new_p, new_p_likelihood = update_no_order_until_pen(p, bank, 0.1) # PEN
 
     except TimeoutError as e:
         print(e)
@@ -88,13 +88,11 @@ for i in range(NUM_PFSTAS):
         update_n_times.append(et-st)
         # new_p_likelihood = likelihood_no_order(new_p, bank) # REG
         # new_p_likelihood = likelihood_no_order_sst(new_p, bank) # SST
-        new_p_likelihood = likelihood_no_order(new_p, bank) #
 
         if new_p_likelihood > highest:
             index = i
             highest = new_p_likelihood
         new_pfstas.append(new_p)
-        # print(likelihood_no_order(p, bank), '-->', new_p_likelihood)
         new_p.pretty_print(assignment)
         print('------')
     finally:
@@ -106,19 +104,14 @@ print(NUM_PFSTAS, "initializations,", NUM_TREES, "trees, max depth", MAX_DEPTH)
 print("Best likelihood:")
 # print(likelihood_no_order(best, bank)) # REG
 # print(likelihood_no_order_sst(best, bank)) # SST
-print(likelihood_no_order(best, bank)) 
+print(highest) 
 
 
 best.clean_print()
 print("\nCFG form:")
 best.pretty_print(assignment)
 
-# likelihood = likelihood_no_order(p, bank) # REG
-# likelihood = likelihood_no_order_sst(p, bank) # SST
-likelihood = likelihood_no_order(p, bank) 
 
-
-print('likelihood with mle pfsta:', likelihood, '\n')
 
 print("\nTimed out on ", timeouts)
 # print("\nUpdate until .01 avg time:", sum(update_n_times)/len(update_n_times)/60, "mins")

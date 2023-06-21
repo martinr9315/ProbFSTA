@@ -10,7 +10,7 @@ The parsing of the CHILDES database occurs in trees.py and parsing.py. The parse
 To run the EM learner on trees from the CHILDES database, run ```python learn.py```. The global variables NUM_PFSTAS, NUM_TREES, TIME_LIMIT, set the number of randomly initialized PFSTAs, the number of trees to randomly sample from CHILDES, and the computation time limit in seconds, respectively.
 
 ##### Regularization
-There are implementation of multiple types of regularization within  ```expectation_maximization.py```. Currently, ```learn.py``` and ```run_trials.py``` both use a statewise entropy penalty with a factor of 25 as a regularizer. The regularization factor can be adjusted by adjusting the global variable ```LAMBDA``` and the type of regularizer can be adjusted by following the ```TODO``` comments, both in ```expectation_maximization.py```.
+There are implementation of multiple types of regularization within  ```expectation_maximization.py```. Currently, ```learn.py``` and ```run_trials.py``` both use a statewise entropy penalty with a factor of 25 as a regularizer. The regularization factor can be adjusted by adjusting the global variable ```LAMBDA``` and the type of regularizer can be adjusted by following the two ```TODO``` comments, both in ```expectation_maximization.py```.
 
 
 ##### Random Starting PFSTA
