@@ -1,4 +1,9 @@
-### Ling 198B: Modelling Learning of Long Distance Dependencies Using PFSTA Expectation Maximization
+# prob-fsta
+
+## Ling 198B: Modelling Learning of Long Distance Dependencies Using PFSTA Expectation Maximization
+
+Presented at UCLA Undergraduate Research Week. 
+Slides can be found [here](CL_slides.pptx) and paper can be found [here](Long_Distance_Wh-Dependency.pdf). Authored by Roxane Martin, supervised by Tim Hunter and Yang Wang.
 
 
 #### CHILDES Trials
